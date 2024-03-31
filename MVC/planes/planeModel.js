@@ -32,7 +32,7 @@ export class Line {
 
 }
 
-export class ObjectsManager {
+export class PlaneModel {
     
     #objects;
     #selectedObjects;
@@ -43,8 +43,16 @@ export class ObjectsManager {
     }
 
     // Добавление нового объекта в массив объектов
-    addObject(object) {
-        this.#objects.push(object);
+    createObject(coordinates) {
+        const { x, y, x1, y1, x2, y2 } = coordinates;
+        if ((x !== undefined) && (y !== undefined) && (x1 === undefined) && (y1 === undefined) && (x2 === undefined) && (y2 === undefined)) {
+            const object = new Point({x: x,y: y});
+            this.#objects.push(object);
+        }
+        if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
+            const object = new Line({x1: x1, y1: y1, x2: x2, y2: y2});
+            this.#objects.push(object);
+        }
     }
 
     get objects(){
@@ -57,7 +65,6 @@ export class ObjectsManager {
 
     // Выделение объекта
     selectObject(object) {
-        console.log('add obj',object)
         this.#selectedObjects.add(object);
     }
 
@@ -128,7 +135,7 @@ export class ObjectsManager {
     lineIntersectsRect(line, rect) {
 
     let linePoint1 = line.firstPoint
-    let linePoint2 = line.firstPoint
+    let linePoint2 = line.secondPoint
     
     let rectanglePoint1 = {x:rect.x1,y:rect.y1}
     let rectanglePoint2 = {x:rect.x1,y:rect.y2}
@@ -145,8 +152,11 @@ export class ObjectsManager {
     let leftIntersection = this.intersects(linePoint1,linePoint2,rectanglePoint1,rectanglePoint2)
 
     if ((upperIntersection || lowerInteersection || rightIntercetion || leftIntersection)){
+        console.log("intersected")
         return true
     }
+
+    // этот колхоз переделать в функцию 
     if (((linePoint1.x >= Math.min(rectanglePoint1.x, rectanglePoint3.x)) && (linePoint1.x <= Math.max(rectanglePoint1.x, rectanglePoint3.x))) &&
     ((linePoint2.x >= Math.min(rectanglePoint1.x, rectanglePoint3.x)) && (linePoint2.x <= Math.max(rectanglePoint1.x, rectanglePoint3.x)))) {
         if (((linePoint1.y >= Math.min(rectanglePoint1.y, rectanglePoint3.y)) && (linePoint1.y <= Math.max(rectanglePoint1.y, rectanglePoint3.y))) &&

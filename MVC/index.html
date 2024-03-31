@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canvas с добавлением, выделением и удалением точек и линий</title>
+<style>
+
+    html, body {
+    width:  100%;
+    height: 100%;
+    margin: 0;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    canvas{
+        display: block;
+    }
+    
+    .navbar {
+        background-color: #333;
+        overflow: hidden;
+    }
+
+    .navbar a {
+        float: left;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+    .navbar a:hover {
+        background-color: #ddd;
+        color: black;
+    }
+
+    .navbar button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        text-decoration: none;
+        margin: 8px;
+    }
+
+    .navbar button:hover {
+        background-color: #45a049;
+    }
+    #container {
+        position: relative;
+        width: 640px;
+        height: 480px;
+    }
+    #gridSVG, #myCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <a href="#" onclick="toggleAddPointMode()">Включить/Выключить добавление точек</a>
+    <a href="#" onclick="toggleAddLineMode()">Включить/Выключить добавление линий</a>
+    <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
+</div>
+<div id="container">
+    <svg id="gridSVG" width="640" height="480"></svg>
+    <canvas id="myCanvas" width="640" height="480"></canvas>
+</div>
+
+<script type="module" src="main.js"></script>
+
+</body>
+</html>
