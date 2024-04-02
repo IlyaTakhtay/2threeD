@@ -155,9 +155,10 @@ export class PlaneView {
             this.controller.handleSelectObjectsInRect(rect);
         }
         if (event.button == 0){ // Для перемещения точки
-            this.isObjectDragging = false;
-
-            this.controller.handleCreateObject({ x: this.dragEndX, y: this.dragEndY })
+            if (this.isObjectDragging == true) {
+                this.isObjectDragging = false;
+                this.controller.handleCreateObject({ x: this.dragEndX, y: this.dragEndY })
+            }
         }
         this.drawObjects();
     }
