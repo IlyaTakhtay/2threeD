@@ -55,6 +55,37 @@ export class PlaneModel {
         }
     }
 
+    deleteObject(coordinates) {
+        const { x, y, x1, y1, x2, y2, radius } = coordinates;
+        if ((x !== undefined) && (y !== undefined) && (x1 === undefined) && (y1 === undefined) && (x2 === undefined) && (y2 === undefined)) {
+            const findedPoint = this.findPoint(x, y, radius)
+            console.log("findedPoint",findedPoint)
+            if (findedPoint.length > 0) {
+                this.#objects.splice(findedPoint[0], 1);
+                return true
+            }
+        }
+        return false
+        // if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
+        //     const object = new Line({x1: x1, y1: y1, x2: x2, y2: y2});
+        //     this.#objects.push(object);
+        // }
+    }
+
+
+    findPoint(x, y, radius) {
+        console.log(x,y,radius)
+        return this.#objects
+            .map((item, index) => {
+                // Вычисляем расстояние от текущей точки до центра области
+                const distance = Math.sqrt((item.pointX - x) ** 2 + (item.pointY - y) ** 2);
+                // Если расстояние меньше или равно радиусу, то точка входит в область
+                return distance <= radius ? index : -1; // Возвращаем индекс объекта, если он входит в область, иначе -1
+            })
+            .filter(index => index !== -1); // Отфильтровываем все индексы, равные -1
+    }
+    
+
     get objects(){
         return this.#objects
     }

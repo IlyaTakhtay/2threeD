@@ -10,7 +10,8 @@ export class PlaneView {
         this.addLineMode = false;
         this.addPointMode = false;
         this.tempLineStart = null;
-        this.isDragging = false;
+        this.isSelectionDragging = false;
+        this.isObjectDragging = false;
         // ??
         this.dragStartX = 0;
         this.dragStartY = 0;
@@ -20,32 +21,9 @@ export class PlaneView {
         this.makeGirdOnSVG();
         this.bindEventListeners();
     }
-    //
-    // drawGrid(context, gridPixelSize, canvasWidth, canvasHeight) {
-    //     context.beginPath();
-    //     for (let x = 0; x <= canvasWidth; x += gridPixelSize) {
-    //         context.moveTo(x, 0);
-    //         context.lineTo(x, canvasHeight);
-    //     }
-    //     for (let y = 0; y <= canvasHeight; y += gridPixelSize) {
-    //         context.moveTo(0, y);
-    //         context.lineTo(canvasWidth, y);
-    //     }
-    //     context.strokeStyle = "#E4E4E4";
-    //     context.stroke();
-    // }
-    
-    // onload() {
-    //     // Customize your grid size, canvas width, and height here
-    //     const gridPixelSize = 25;
-    //     const canvasWidth = this.canvas.width;
-    //     const canvasHeight = this.canvas.height;
-    //     this.drawGrid(this.gridCtx, gridPixelSize, canvasWidth, canvasHeight);
-    //     // Additional drawing or updates go here
-    // };
-    //
+
     makeGirdOnSVG(){
-    const gridSize = 15; // Размер ячейки сетки
+    const gridSize = 20; // Размер ячейки сетки
         // Создание SVG сетки
         const gridSVG = document.getElementById('gridSVG');
         for (let x = 0; x <= gridSVG.getAttribute('width'); x += gridSize) {
@@ -72,8 +50,8 @@ export class PlaneView {
         this.canvas.addEventListener('click', this.onCanvasClick);
         this.canvas.addEventListener('contextmenu', this.handleContextMenu);
         this.canvas.addEventListener('mousedown', this.onMouseDown);
-        this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-        this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+        this.canvas.addEventListener('mousemove', this.onMouseMove);
+        this.canvas.addEventListener('mouseup', this.onMouseUp);
     }
 
     onCanvasClick = (event) => {
@@ -98,48 +76,96 @@ export class PlaneView {
         this.drawObjects();
     }
 
+    // Разобраться как работает!!!!!!!!!!!!! ТАК ОНО ЕЩЁ И НЕ РАБОТАЕТ + ЕЩЁ НАДО onMOVE а не на onMouseUP
+    snapCoordinate(value) {
+        let grideSize = 20
+        let snapTolerance = 5
+        let moduloValue = value % grideSize;
+
+        if (moduloValue <= snapTolerance) {
+            // snap to lower value
+            return value - moduloValue;
+        } else if (moduloValue >= (grideSize - snapTolerance)) {
+            // snap to higher value
+            return value + (grideSize - moduloValue);
+        } else
+            return value
+    }
+    // Разобраться как работает!!!!!!!!!!!!! ТАК ОНО ЕЩЁ И НЕ РАБОТАЕТ
+
     handleContextMenu = (event) =>  {
-        event.preventDefault();
+        event.preventDefault(); // Отменяем контекстное меню, которое на RMB
     }
 
     onMouseDown = (event) => {
-        const rect = this.canvas.getBoundingClientRect();
-        this.dragStartX = event.clientX - rect.left;
-        this.dragStartY = event.clientY - rect.top;
-        this.isDragging = true;
+        const canvasCorrection = this.canvas.getBoundingClientRect();
+        if (event.button == 2) { //Для выделения прямоугольником
+            this.dragStartX = event.clientX - canvasCorrection.left;
+            this.dragStartY = event.clientY - canvasCorrection.top;
+            this.isSelectionDragging = true;
+        }
+        if ((event.button == 0) && (this.addPointMode == false)) { //Для перемещения точки
+            this.dragStartX = event.clientX - canvasCorrection.left
+            this.dragStartY = event.clientY - canvasCorrection.top
+            if ( this.controller.handleDeleteObject({x: this.dragStartX , y: this.dragStartY, radius: 3}) == true ){
+                this.isObjectDragging = true;
+            }
+        }
     }
 
-    onMouseMove(event) {
-        if (this.isDragging) {
+    onMouseMove = (event) => {
+
+        if (this.isSelectionDragging) { // Для выделения прямоугольником
             const rect = this.canvas.getBoundingClientRect();
             this.dragEndX = event.clientX - rect.left;
             this.dragEndY = event.clientY - rect.top;
             this.drawSelectionRect();
         }
+
+        if (this.isObjectDragging) {
+            const rect = this.canvas.getBoundingClientRect();
+            this.dragEndX = event.clientX - rect.left;
+            this.dragEndY = event.clientY - rect.top;
+            this.drawMovingPoint();
+        }
+
+        // Просмоторщик координат мышки
         this.ctx.font = '12px Arial';
         this.ctx.textAlign = 'right';
         this.ctx.textBaseline = 'bottom';
         
         this.ctx.clearRect(350, 385, 50, 20);
         this.ctx.fillText(event.clientX  + ', ' + event.clientY, 400, 400);
+
+        // Просмоторщик координат мышки
     }
 
-    onMouseUp() {
-        this.isDragging = false;
-        const rect = {
-            x1: Math.min(this.dragStartX, this.dragEndX),
-            y1: Math.min(this.dragStartY, this.dragEndY),
-            x2: Math.max(this.dragStartX, this.dragEndX),
-            y2: Math.max(this.dragStartY, this.dragEndY)
-        };
-        this.controller.handleClearSelectedObjects();
-        this.controller.handleSelectObjectsInRect(rect);
+
+    onMouseUp = (event) => {
+        
+        if (event.button == 2){ // Для выделения прямоугольником
+            this.isSelectionDragging = false;
+            const rect = {
+                x1: Math.min(this.dragStartX, this.dragEndX),
+                y1: Math.min(this.dragStartY, this.dragEndY),
+                x2: Math.max(this.dragStartX, this.dragEndX),
+                y2: Math.max(this.dragStartY, this.dragEndY)
+            };
+            this.controller.handleClearSelectedObjects();
+            this.controller.handleSelectObjectsInRect(rect);
+        }
+        if (event.button == 0){ // Для перемещения точки
+            this.isObjectDragging = false;
+
+            this.controller.handleCreateObject({ x: this.dragEndX, y: this.dragEndY })
+        }
         this.drawObjects();
     }
 
     drawObjects() {
         // this.ctx.canvas.width = window.innerWidth;
         // this.ctx.canvas.height = window.innerHeight;
+
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // нужно чтобы при отпускании мышки не зависал пямоугольник выделения
         this.controller.handleObjects().forEach((obj) => {
             if (obj instanceof Point) {
@@ -155,8 +181,20 @@ export class PlaneView {
         });
     }
 
+    drawMovingPoint() {
+        const xSnapped = this.snapCoordinate(this.dragEndX)
+        const ySnapped = this.snapCoordinate(this.dragEndY)
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.drawObjects();// нужно чтобы не пропадали точки и линии во время переноса объекта
+        this.ctx.beginPath()
+        this.ctx.arc(xSnapped, ySnapped, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.dragEndX = xSnapped
+        this.dragEndY = ySnapped
+    }
+
     drawSelectionRect() {
-        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // нужно чтобы внутри прямоугольной области выделения удалялись предыдущие области
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // нужно чтобы внутри прямоугольной области выделения удалялись предыдущие области
         //выделения
         this.drawObjects();// нужно чтобы не пропадали точки и линии во время рисования прямоугольника
         this.ctx.beginPath();

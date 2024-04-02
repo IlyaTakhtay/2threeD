@@ -12,10 +12,20 @@ export class PlaneController {
         }
         return this.model.createObject(coordinates);
     }
+    
+    handleDeleteObject(coordinates){
+        console.log("Handle Remove object")
+        if (!coordinates){
+            throw Error ('Can\'t delete empty');
+        }
+        return this.model.deleteObject(coordinates);
+    }
+
     handleObjects(){
         console.log("Handle Obects to render")
         return this.model.objects;
     }
+
     handleSelect(object){
         console.log("Handle select Obejct")
         if (!object){
@@ -23,14 +33,17 @@ export class PlaneController {
         }
         return this.model.selectObject(object);
     }
+
     handleClearSelectedObjects() {
         console.log("Handle clear selected Obejcts")
         return this.model.clearSelectedObjects();
     }
+
     handleDeleteSelectedObjects(){
         console.log("Handle delete Object");
         return this.model.deleteSelectedObjects();
     }
+
     handleSelectObjectsInRect(rect){
         console.log("Handle selection objects by rectangle")
         if (!rect){
