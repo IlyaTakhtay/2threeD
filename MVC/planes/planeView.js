@@ -4,6 +4,7 @@ export class PlaneView {
 
     constructor(canvasId, controller) {
         this.controller = controller 
+        this.gridSize = 20
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
         // ??
@@ -23,10 +24,9 @@ export class PlaneView {
     }
 
     makeGirdOnSVG(){
-    const gridSize = 20; // Размер ячейки сетки
         // Создание SVG сетки
         const gridSVG = document.getElementById('gridSVG');
-        for (let x = 0; x <= gridSVG.getAttribute('width'); x += gridSize) {
+        for (let x = 0; x <= gridSVG.getAttribute('width'); x += this.gridSize) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', x);
             line.setAttribute('y1', 0);
@@ -35,7 +35,7 @@ export class PlaneView {
             line.setAttribute('stroke', 'lightgray');
             gridSVG.appendChild(line);
         }
-        for (let y = 0; y <= gridSVG.getAttribute('height'); y += gridSize) {
+        for (let y = 0; y <= gridSVG.getAttribute('height'); y += this.gridSize) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', 0);
             line.setAttribute('y1', y);
@@ -78,16 +78,15 @@ export class PlaneView {
 
     // Разобраться как работает!!!!!!!!!!!!! ТАК ОНО ЕЩЁ И НЕ РАБОТАЕТ + ЕЩЁ НАДО onMOVE а не на onMouseUP
     snapCoordinate(value) {
-        let grideSize = 20
         let snapTolerance = 5
-        let moduloValue = value % grideSize;
+        let moduloValue = value % this.gridSIze;
 
         if (moduloValue <= snapTolerance) {
             // snap to lower value
             return value - moduloValue;
-        } else if (moduloValue >= (grideSize - snapTolerance)) {
+        } else if (moduloValue >= (this.gridSIze - snapTolerance)) {
             // snap to higher value
-            return value + (grideSize - moduloValue);
+            return value + (this.gridSIze - moduloValue);
         } else
             return value
     }
