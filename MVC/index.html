@@ -61,10 +61,31 @@
         width: 640px;
         height: 480px;
     }
-    #gridSVG, #myCanvas {
+    #gridSVG, #XYCanvas {
         position: absolute;
         top: 0;
         left: 0;
+        width: 640px;
+        height: 480px;
+    }
+    #mouseCoordinates {
+        position: absolute;
+        bottom: -15px;
+        right: 0;
+        /* padding: 5px; */
+        background-color: rgba(255, 255, 255, 0.8);
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+    }
+    #legend {
+        margin-top: 10px;
+        position: absolute;
+        /* bottom: -15px; */
+        right: -95px;
+        /* padding: 5px; */
+        background-color: rgba(255, 255, 255, 0.8);
+        font-family: Arial, sans-serif;
+        font-size: 12px;
     }
 </style>
 </head>
@@ -76,8 +97,6 @@
     <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
 </div>
 <div id="container">
-    <svg id="gridSVG" width="640" height="480"></svg>
-    <canvas id="myCanvas" width="640" height="480"></canvas>
 </div>
 
 <script type="module" src="main.js"></script>
