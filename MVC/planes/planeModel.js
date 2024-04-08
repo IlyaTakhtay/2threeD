@@ -8,6 +8,7 @@ export class Point {
         this.#y = y; 
         this.#name = name;
     }
+    
     get pointX() { return this.#x }
     get pointY() { return this.#y }
 
@@ -17,29 +18,35 @@ export class Point {
     set pointY(y) {this.#y = y}
 
     set name(name) { this.#name = name }
+
+    static fromCoordinates(x, y, name = null) {
+        return new Point({x, y, name});
+    }
+
+    toCoordinates() {
+        return {x: this.#x, y: this.#y};
+    }
 }
 
 export class Line {
-    #x1;
-    #x2;
-    #y1;
-    #y2;
+    #startPoint;
+    #endPoint;
     #name;
-    constructor({x1 = null, y1 = null, x2 = null, y2 = null, name = null}) {
-        this.#x1 = x1;
-        this.#y1 = y1;
-        this.#x2 = x2;
-        this.#y2 = y2; 
+
+    constructor({startPoint = null, endPoint = null, name = null}) {
+        this.#startPoint = startPoint;
+        this.#endPoint = endPoint;
         this.#name = name;
     }
-    get linePointX1() { return this.#x1 }
-    get linePointY1() { return this.#y1 }
 
-    get linePointX2() { return this.#x2 }
-    get linePointY2() { return this.#y2 }
+    get linePointX1() { return this.#startPoint.pointX; }
+    get linePointY1() { return this.#startPoint.pointY; }
 
-    get firstPoint() { return {x:this.#x1, y:this.#y1} }
-    get secondPoint() { return {x:this.#x2, y:this.#y2}}
+    get linePointX2() { return this.#endPoint.pointX; }
+    get linePointY2() { return this.#endPoint.pointY; }
+
+    get firstPoint() { return this.#startPoint.toCoordinates(); }
+    get secondPoint() { return this.#endPoint.toCoordinates(); }
 
     get name() { return this.#name};
 
@@ -58,27 +65,23 @@ export class PlaneModel {
     }
 
     // Добавление нового объекта в массив объектов
-    createObject(coordinates, objectName = null) { //TODO: maybe remove objectName as recived value
+    createObject(coordinates, objectName = null) {
         const { x, y, x1, y1, x2, y2 } = coordinates;
         if ((x !== undefined) && (y !== undefined) && (x1 === undefined) && (y1 === undefined) && (x2 === undefined) && (y2 === undefined)) {
-            const object = new Point({
-                x: x,
-                y: y, 
-                name: objectName === null ? `Точка ${this.#objects.filter(obj => obj instanceof Point).length + 1}`: objectName,
-            });
-            console.log(this.#objects)
+            const object = Point.fromCoordinates(x, y, objectName === null ? `Точка ${this.#objects.filter(obj => obj instanceof Point).length + 1}` : objectName);
             this.#objects.push(object);
         }
         if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
+            const startPoint = Point.fromCoordinates(x1, y1);
+            const endPoint = Point.fromCoordinates(x2, y2);
             const object = new Line({
-                x1: x1, 
-                y1: y1, 
-                x2: x2, 
-                y2: y2, 
-                name: objectName === null ? `Линия ${this.#objects.filter(obj => obj instanceof Line).length + 1}`: objectName,
+                startPoint,
+                endPoint,
+                name: objectName === null ? `Линия ${this.#objects.filter(obj => obj instanceof Line).length + 1}` : objectName,
             });
             this.#objects.push(object);
         }
+        console.log(this.#objects)
     }
 
     deleteObject(coordinates) {
