@@ -52,23 +52,25 @@ export class PlaneController {
         return this.model.selectObjectsInRect(rect);
     }
 
-    handleFindObjectName(coordinates){
-        console.log("Handle find object coordinates")
-        const object = this.model.findObject(coordinates);
-        console.log('pn',object)
-        if (object) {
+    handleFindObjectName(coordinates) {
+        console.log("Handle find object coordinates");
+        const result = this.model.findObject(coordinates);
+        console.log('pn', result);
+        if (result) {
+            const { object, pointType } = result;
             return {
-              name: object.name,
-              type: object.constructor.name
+                name: object.name,
+                type: object.constructor.name,
+                pointType: pointType,
             };
-          } else {
+        } else {
             return null;
-          }
+        }
     }
 
-    handleUpdateObjectCoordinates(objectName, x, y) {
+    handleUpdateObjectCoordinates(objectName, x, y, pointType=null) {
         console.log('coord',objectName, x, y)
-        this.model.updateObjectCoordinatesByName(objectName, x, y);
+        this.model.updateObjectCoordinatesByName(objectName, x, y, pointType);
     }
 
     handleUpdateObjectName(objectName,newName) {

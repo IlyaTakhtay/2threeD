@@ -38,6 +38,12 @@ export class Line {
     get linePointX2() { return this.#x2 }
     get linePointY2() { return this.#y2 }
 
+    set linePointX1(x1) { this.#x1 = x1 }
+    set linePointY1(y1) { this.#y1 = y1 }
+
+    set linePointX2(x2) { this.#x2 = x2 }
+    set linePointY2(y2) { this.#y2 = y2 }
+
     get firstPoint() { return {x:this.#x1, y:this.#y1} }
     get secondPoint() { return {x:this.#x2, y:this.#y2}}
 
@@ -103,21 +109,45 @@ export class PlaneModel {
 
     findObject(coordinates) {
         const { x, y, radius } = coordinates;
-
+    
         if ((x !== undefined) && (y !== undefined) && (radius !== undefined)) {
-            return this.#objects.find(item => {
+            const index = this.#objects.findIndex(item => {
                 if (item instanceof Point) {
                     const distance = Math.sqrt((item.pointX - x) ** 2 + (item.pointY - y) ** 2);
                     return distance <= radius;
-                }else if (item instanceof Line) {
+                } else if (item instanceof Line) {
                     const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
                     const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
-                    return ((distance1 <= radius) || (distance2 <= radius));
+                    return distance1 <= radius || distance2 <= radius;
                 }
                 return false;
             });
+        
+            if (index !== -1) {
+                const item = this.#objects[index];
+                if (item instanceof Point) {
+                    return {
+                        object: item,
+                        pointType: 'point'
+                    };
+                } else if (item instanceof Line) {
+                    const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
+                    const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
+                    if (distance1 <= radius) {
+                        return {
+                            object: item,
+                            pointType: 'Point1'
+                        };
+                    } else if (distance2 <= radius) {
+                        return {
+                            object: item,
+                            pointType: 'Point2'
+                        };
+                    }
+                }
+            }
+            return null;
         }
-
     }
     
     get objects(){
@@ -180,7 +210,7 @@ export class PlaneModel {
         });
     }
 
-    updateObjectCoordinatesByName(objectName, x, y) {
+    updateObjectCoordinatesByName(objectName, x, y, pointType=null) {
         const object = this.#objects.find(item => item.name === objectName);
         if (object) {
             if (object instanceof Point) {
@@ -190,10 +220,13 @@ export class PlaneModel {
                 console.log(object)
                 Observer.dispatch('objectUpdated', object) // TODO
             } else if (object instanceof Line) {
-                // Обновление координат линии, если необходимо
-                // Например:
-                // object.linePointX1 = x;
-                // object.linePointY1 = y;
+                if (pointType == 'Point1'){
+                    object.linePointX1 = x;
+                    object.linePointY1 = y;
+                } else if (pointType == 'Point2'){
+                    object.linePointX2 = x;
+                    object.linePointY2 = y;
+                }
             }
         }
     }

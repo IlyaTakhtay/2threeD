@@ -299,11 +299,11 @@ export class PlaneView {
             // this.drawMovingPoint();
         }
 
-        if (this.isObjectDragging && this.draggedObject.type == Line) { // Перемещение точки
+        if (this.isObjectDragging && this.draggedObject.type == 'Line') { // Перемещение точки
             this.dragNow = this.canvasCoordinates(event);
             const snappedX = this.snapCoordinate(this.dragNow.x);
             const snappedY = this.snapCoordinate(this.dragNow.y);
-            this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
+            this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY, this.draggedObject.pointType);
             this.drawObjects();
             // this.drawMovingPoint();
         }
