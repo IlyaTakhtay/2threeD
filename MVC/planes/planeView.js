@@ -1,44 +1,89 @@
 import { Point, Line} from './planeModel.js';
-
+import Observer from './utils/observer.js'
 export class ToolBar { // TODO: mb i ne nado
 
 }
 
-export class Legend {
-    constructor(canvasId, legendData) {
-      this.canvas = document.getElementById(canvasId);
-      this.legendData = legendData;
-      this.legendElement = document.createElement('div');
-      this.legendElement.id = 'legend';
-      this.legendElement.style.marginTop = '10px';
-      document.getElementById('container').appendChild(this.legendElement)
+export class Legend { // should to make it maximally independent to PlaneView 
+
+    constructor(canvasId, legendID, controller) {
+        this.controller = controller
+        this.legendID = legendID
+        this.canvas = document.getElementById(canvasId);
+        this.legendElement = document.createElement('div');
+        this.legendElement.setAttribute("name", "legend");
+        this.legendElement.id = legendID
+        this.legendElement.style.marginTop = '10px';
+        document.getElementById('container').appendChild(this.legendElement)
     }
-  
-    createLegendItems() {
-      this.legendData.forEach((item) => {
-        const legendItem = document.createElement('div');
-        legendItem.style.display = 'flex';
-        legendItem.style.alignItems = 'center';
-        legendItem.style.marginBottom = '5px';
-  
-        const colorBox = document.createElement('div');
-        colorBox.style.width = '20px';
-        colorBox.style.height = '20px';
-        colorBox.style.backgroundColor = item.color;
-        colorBox.style.marginRight = '10px';
-  
-        const label = document.createElement('span');
-        label.textContent = item.label;
-  
-        legendItem.appendChild(colorBox);
-        legendItem.appendChild(label);
-        this.legendElement.appendChild(legendItem);
-      });
+
+    createLegendItems(objects) {
+        document.getElementById(this.legendID).innerHTML = '';
+        objects.forEach((item) => {
+
+            const legendItem = document.createElement('div');
+            legendItem.style.display = 'flex';
+            legendItem.style.alignItems = 'center';
+            legendItem.style.marginBottom = '5px';
+
+            const colorBox = document.createElement('div');
+            colorBox.style.width = '20px';
+            colorBox.style.height = '20px';
+            colorBox.style.marginRight = '10px';
+
+            const label = document.createElement('span');
+            if (item instanceof Point) {
+                colorBox.style.backgroundColor = 'black';
+                label.textContent = item.name;
+            }
+            
+            if (item instanceof Line) {
+                colorBox.style.backgroundColor = 'blue';
+                label.textContent = item.name;
+            }
+            
+            label.addEventListener('dblclick', this.updateObjectName);
+            label.addEventListener('contextmenu', this.updateCoordinates);
+            // label.addEventListener('contextmenu', this.handleContextMenu);
+            legendItem.appendChild(colorBox);
+            legendItem.appendChild(label);
+            this.legendElement.appendChild(legendItem);
+        });
     }
-  
-    render() {
-      this.createLegendItems();
-      this.canvas.parentNode.insertBefore(this.legendElement, this.canvas.nextSibling);
+    
+    updateObjectName = (event) => {
+        if (event.button == 0){
+            const element = event.target; // Элемент, вызвавший событие
+            const name = element.textContent;
+            const newName = prompt("Введите новое имя:", name);
+            if (newName) {
+                this.controller.handleUpdateObjectName(name, newName);
+                element.textContent = newName; // Обновляем отображаемое имя прямо здесь, если это требуется
+            }
+        }
+    }
+
+    updateCoordinates = (event) => {
+        console.log("эээээ")
+        if (event.button == 2){
+            console.log("normis")
+            const element = event.target;
+            const name = element.textContent;
+            const newCoord = prompt("Введите новые координаты формата x;y");
+            if (newCoord) {
+                const [x,y] = newCoord.split(";");
+                this.controller.handleUpdateObjectCoordinates(name, x, y);
+            }
+        }
+    }
+
+    handleContextMenu = (event) =>  {
+        event.preventDefault(); // Отменяем контекстное меню, которое на RMB
+    }
+
+    render(objects) {
+        this.createLegendItems(objects);
+        // this.canvas.parentNode.insertBefore(this.legendElement, this.canvas.nextSibling);
     }
   }
   
@@ -46,8 +91,10 @@ export class Legend {
 //legend
 export class PlaneView {
 
-    constructor(containerID, canvasID, coordinatesID, controller) {
+    constructor(containerID, canvasID, coordinatesID, legendID, controller) {
         const container = document.getElementById(containerID)
+
+        this.Legend = new Legend(canvasID, legendID, controller); // test feature - Колхоз если кратко.
 
         this.canvas = document.createElement('canvas');
         this.canvas.id = canvasID;
@@ -57,6 +104,7 @@ export class PlaneView {
     
         this.mouseCoordinatesElement = document.createElement('div');
         this.mouseCoordinatesElement.id = coordinatesID;
+        this.mouseCoordinatesElement.setAttribute("name", "mouseCoordinates");
         this.mouseCoordinatesElement.textContent = '0, 0';
         
         container.appendChild(this.canvas);
@@ -71,6 +119,7 @@ export class PlaneView {
         this.tempLineStart = null;
         this.isSelectionDragging = false;
         this.isObjectDragging = false;
+        this.draggedObectName = null;
         // ??
         this.dragStart = { x:null, y:null };
         this.dragNow = { x:null, y:null };
@@ -78,12 +127,13 @@ export class PlaneView {
         
         this.makeGirdOnSVG();
         this.bindEventListeners();
+        this.subscribe();
     }
 
-    makeGirdOnSVG(){
+    makeGirdOnSVG() {
         // Создание SVG сетки
         const gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        gridSVG.id = 'gridSVG';
+        gridSVG.setAttribute('name', 'gridSVG');
         gridSVG.setAttribute("width", "640");
         gridSVG.setAttribute("height", "480");
         container.insertBefore(gridSVG, container.firstChild);
@@ -113,6 +163,12 @@ export class PlaneView {
         this.canvas.addEventListener('mousedown', this.onMouseDown);
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
+    }
+
+    subscribe() {
+        Observer.subscribe('objectUpdated', () => {
+            this.drawObjects()
+        });
     }
 
     snapCoordinate(value) {
@@ -147,6 +203,8 @@ export class PlaneView {
                 this.ctx.stroke();
             }
         });
+
+        this.Legend.render(this.controller.handleObjects()) //Legend
     }
 
     drawMovingPoint() {
@@ -183,6 +241,7 @@ export class PlaneView {
     }
 
     onCanvasClick = (event) => {
+
         const coordinates = this.canvasCoordinates(event)
         if (this.addPointMode) {
             this.controller.handleCreateObject(coordinates);
@@ -203,7 +262,7 @@ export class PlaneView {
                 this.tempLineStart = null;
             }
         }
-
+        
         this.drawObjects();
     }
 
@@ -215,7 +274,10 @@ export class PlaneView {
 
         if ((event.button == 0) && (this.addPointMode == false)) { //Для перемещения точки
             this.dragStart = this.canvasCoordinates(event)
-            if ( this.controller.handleDeleteObject({ x:this.dragStart.x, y:this.dragStart.y, radius: 3}) == true ){
+            const object = this.controller.handleFindObjectName({ x: this.dragStart.x, y: this.dragStart.y, radius: 3 });
+            if (object) {
+                this.draggedObject = object;
+                console.log(this.draggedObject)
                 this.isObjectDragging = true;
             }
         }
@@ -228,9 +290,22 @@ export class PlaneView {
             this.drawSelectionRect();
         }
 
-        if (this.isObjectDragging) { // Перемещение точки
+        if (this.isObjectDragging && this.draggedObject.type == 'Point') { // Перемещение точки
             this.dragNow = this.canvasCoordinates(event);
-            this.drawMovingPoint();
+            const snappedX = this.snapCoordinate(this.dragNow.x);
+            const snappedY = this.snapCoordinate(this.dragNow.y);
+            this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
+            this.drawObjects();
+            // this.drawMovingPoint();
+        }
+
+        if (this.isObjectDragging && this.draggedObject.type == Line) { // Перемещение точки
+            this.dragNow = this.canvasCoordinates(event);
+            const snappedX = this.snapCoordinate(this.dragNow.x);
+            const snappedY = this.snapCoordinate(this.dragNow.y);
+            this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
+            this.drawObjects();
+            // this.drawMovingPoint();
         }
 
         // Отображение координат мышки на canvas
@@ -252,12 +327,17 @@ export class PlaneView {
             this.controller.handleSelectObjectsInRect(rect);
         }
         if (event.button == 0){ // Для перемещения точки
-            if (this.isObjectDragging == true) {
+            // if (this.isObjectDragging == true) {
+            //     this.isObjectDragging = false;
+            //     this.controller.handleUpdateObjectCoordinates(
+            //         this.draggedObject.name,
+            //         this.snapCoordinate(this.dragEnd.x), 
+            //         this.snapCoordinate(this.dragEnd.y),
+            //     )
+            // }
+            if (this.isObjectDragging && this.draggedObject) {
                 this.isObjectDragging = false;
-                this.controller.handleCreateObject({ 
-                    x: this.snapCoordinate(this.dragEnd.x), 
-                    y: this.snapCoordinate(this.dragEnd.y),
-                })
+                this.draggedObject = null;
             }
         }
         this.drawObjects();

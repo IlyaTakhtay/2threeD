@@ -61,14 +61,14 @@
         width: 640px;
         height: 480px;
     }
-    #gridSVG, #XYCanvas {
+    svg[name="gridSVG"], canvas {
         position: absolute;
         top: 0;
         left: 0;
         width: 640px;
         height: 480px;
     }
-    #mouseCoordinates {
+    div[name="mouseCoordinates"] {
         position: absolute;
         bottom: -15px;
         right: 0;
@@ -77,15 +77,19 @@
         font-family: Arial, sans-serif;
         font-size: 12px;
     }
-    #legend {
+    div[name="legend"] {
+        overflow: scroll;
         margin-top: 10px;
         position: absolute;
-        /* bottom: -15px; */
-        right: -95px;
-        /* padding: 5px; */
+        right: -115px;
+        min-width: 100px;
+        max-height: 300px;
         background-color: rgba(255, 255, 255, 0.8);
         font-family: Arial, sans-serif;
         font-size: 12px;
+    }
+    div[name="legend"]::-webkit-scrollbar {
+        display: none;
     }
 </style>
 </head>

@@ -51,4 +51,28 @@ export class PlaneController {
         }
         return this.model.selectObjectsInRect(rect);
     }
+
+    handleFindObjectName(coordinates){
+        console.log("Handle find object coordinates")
+        const object = this.model.findObject(coordinates);
+        console.log('pn',object)
+        if (object) {
+            return {
+              name: object.name,
+              type: object.constructor.name
+            };
+          } else {
+            return null;
+          }
+    }
+
+    handleUpdateObjectCoordinates(objectName, x, y) {
+        console.log('coord',objectName, x, y)
+        this.model.updateObjectCoordinatesByName(objectName, x, y);
+    }
+
+    handleUpdateObjectName(objectName,newName) {
+        console.log("Handle update object name")
+        this.model.updateObjectName(objectName,newName)
+    }
 }

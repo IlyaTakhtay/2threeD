@@ -1,13 +1,22 @@
+import Observer from './utils/observer.js'
 export class Point {
     #x;
     #y;
-    constructor({x = null, y = null}) {
+    #name;
+    constructor({x = null, y = null, name = null}) {
         this.#x = x;
         this.#y = y; 
+        this.#name = name;
     }
     get pointX() { return this.#x }
     get pointY() { return this.#y }
 
+    get name() { return this.#name }
+
+    set pointX(x) {this.#x = x}
+    set pointY(y) {this.#y = y}
+
+    set name(name) { this.#name = name }
 }
 
 export class Line {
@@ -15,11 +24,13 @@ export class Line {
     #x2;
     #y1;
     #y2;
-    constructor({x1 = null, y1 = null, x2 = null, y2 = null}) {
+    #name;
+    constructor({x1 = null, y1 = null, x2 = null, y2 = null, name = null}) {
         this.#x1 = x1;
         this.#y1 = y1;
         this.#x2 = x2;
         this.#y2 = y2; 
+        this.#name = name;
     }
     get linePointX1() { return this.#x1 }
     get linePointY1() { return this.#y1 }
@@ -29,6 +40,10 @@ export class Line {
 
     get firstPoint() { return {x:this.#x1, y:this.#y1} }
     get secondPoint() { return {x:this.#x2, y:this.#y2}}
+
+    get name() { return this.#name};
+
+    set name(name) { this.#name = name }
 
 }
 
@@ -43,14 +58,25 @@ export class PlaneModel {
     }
 
     // Добавление нового объекта в массив объектов
-    createObject(coordinates) {
+    createObject(coordinates, objectName = null) { //TODO: maybe remove objectName as recived value
         const { x, y, x1, y1, x2, y2 } = coordinates;
         if ((x !== undefined) && (y !== undefined) && (x1 === undefined) && (y1 === undefined) && (x2 === undefined) && (y2 === undefined)) {
-            const object = new Point({x: x,y: y});
+            const object = new Point({
+                x: x,
+                y: y, 
+                name: objectName === null ? `Точка ${this.#objects.filter(obj => obj instanceof Point).length + 1}`: objectName,
+            });
+            console.log(this.#objects)
             this.#objects.push(object);
         }
         if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
-            const object = new Line({x1: x1, y1: y1, x2: x2, y2: y2});
+            const object = new Line({
+                x1: x1, 
+                y1: y1, 
+                x2: x2, 
+                y2: y2, 
+                name: objectName === null ? `Линия ${this.#objects.filter(obj => obj instanceof Line).length + 1}`: objectName,
+            });
             this.#objects.push(object);
         }
     }
@@ -58,11 +84,13 @@ export class PlaneModel {
     deleteObject(coordinates) {
         const { x, y, x1, y1, x2, y2, radius } = coordinates;
         if ((x !== undefined) && (y !== undefined) && (x1 === undefined) && (y1 === undefined) && (x2 === undefined) && (y2 === undefined)) {
-            const findedPoint = this.findPoint(x, y, radius)
-            console.log("findedPoint",findedPoint)
-            if (findedPoint.length > 0) {
-                this.#objects.splice(findedPoint[0], 1);
-                return true
+            const foundPoint = this.findObject(x, y, radius);
+            if (foundPoint) {
+                const index = this.#objects.indexOf(foundPoint);
+                if (index !== -1) {
+                    this.#objects.splice(index, 1);
+                    return true;
+                }
             }
         }
         return false
@@ -73,19 +101,25 @@ export class PlaneModel {
     }
 
 
-    findPoint(x, y, radius) {
-        console.log(x,y,radius)
-        return this.#objects
-            .map((item, index) => {
-                // Вычисляем расстояние от текущей точки до центра области
-                const distance = Math.sqrt((item.pointX - x) ** 2 + (item.pointY - y) ** 2);
-                // Если расстояние меньше или равно радиусу, то точка входит в область
-                return distance <= radius ? index : -1; // Возвращаем индекс объекта, если он входит в область, иначе -1
-            })
-            .filter(index => index !== -1); // Отфильтровываем все индексы, равные -1
+    findObject(coordinates) {
+        const { x, y, radius } = coordinates;
+
+        if ((x !== undefined) && (y !== undefined) && (radius !== undefined)) {
+            return this.#objects.find(item => {
+                if (item instanceof Point) {
+                    const distance = Math.sqrt((item.pointX - x) ** 2 + (item.pointY - y) ** 2);
+                    return distance <= radius;
+                }else if (item instanceof Line) {
+                    const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
+                    const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
+                    return ((distance1 <= radius) || (distance2 <= radius));
+                }
+                return false;
+            });
+        }
+
     }
     
-
     get objects(){
         return this.#objects
     }
@@ -144,6 +178,31 @@ export class PlaneModel {
                 }
             }
         });
+    }
+
+    updateObjectCoordinatesByName(objectName, x, y) {
+        const object = this.#objects.find(item => item.name === objectName);
+        if (object) {
+            if (object instanceof Point) {
+                console.log('yes')
+                object.pointX = x;
+                object.pointY = y;
+                console.log(object)
+                Observer.dispatch('objectUpdated', object) // TODO
+            } else if (object instanceof Line) {
+                // Обновление координат линии, если необходимо
+                // Например:
+                // object.linePointX1 = x;
+                // object.linePointY1 = y;
+            }
+        }
+    }
+
+    updateObjectName(objectName,newName) {
+        const object = this.#objects.find(item => item.name === objectName);
+        if (object) {
+            object.name = newName;
+        }
     }
 
     //Get interetion of lines algo 
