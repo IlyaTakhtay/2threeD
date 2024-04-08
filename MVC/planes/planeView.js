@@ -6,7 +6,7 @@ export class ToolBar { // TODO: mb i ne nado
 
 export class Legend { // should to make it maximally independent to PlaneView 
 
-    constructor(canvasId, legendID, controller) {
+    constructor(canvasId, legendID, containerID, controller) {
         this.controller = controller
         this.legendID = legendID
         this.canvas = document.getElementById(canvasId);
@@ -14,7 +14,7 @@ export class Legend { // should to make it maximally independent to PlaneView
         this.legendElement.setAttribute("name", "legend");
         this.legendElement.id = legendID
         this.legendElement.style.marginTop = '10px';
-        document.getElementById('container').appendChild(this.legendElement)
+        document.getElementById(containerID).appendChild(this.legendElement)
     }
 
     createLegendItems(objects) {
@@ -93,8 +93,9 @@ export class PlaneView {
 
     constructor(containerID, canvasID, coordinatesID, legendID, controller) {
         const container = document.getElementById(containerID)
+        console.log(container)
 
-        this.Legend = new Legend(canvasID, legendID, controller); // test feature - Колхоз если кратко.
+        this.Legend = new Legend(canvasID, legendID, containerID, controller); // test feature - Колхоз если кратко.
 
         this.canvas = document.createElement('canvas');
         this.canvas.id = canvasID;
@@ -125,18 +126,19 @@ export class PlaneView {
         this.dragNow = { x:null, y:null };
         this.dragEnd = { x:null, y:null };
         
-        this.makeGirdOnSVG();
+        this.makeGirdOnSVG(container);
         this.bindEventListeners();
         this.subscribe();
     }
 
-    makeGirdOnSVG() {
+    makeGirdOnSVG(container) {
         // Создание SVG сетки
         const gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         gridSVG.setAttribute('name', 'gridSVG');
         gridSVG.setAttribute("width", "640");
         gridSVG.setAttribute("height", "480");
         container.insertBefore(gridSVG, container.firstChild);
+        console.log("grid",container)
         for (let x = 0; x <= gridSVG.getAttribute('width'); x += this.gridSize) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', x);
@@ -364,3 +366,4 @@ export class PlaneView {
         this.drawObjects();
     }
 }
+
