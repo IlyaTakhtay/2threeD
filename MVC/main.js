@@ -3,31 +3,31 @@ import { PlaneModel } from './planes/planeModel.js';
 import { PlaneView } from './planes/planeView.js';
 import { Legend } from './planes/planeView.js'
 
-const planeModel = new PlaneModel;
+const planeModelXZ = new PlaneModel;
 
-const planeController = new PlaneController(planeModel);
+const planeControllerXZ = new PlaneController(planeModelXZ);
 
-const planeView = new PlaneView('container','XYCanvas','XYCanvasCoordinates', 'XYlegend',planeController);
+const planeViewXZ = new PlaneView('containerXZ','XZCanvas','XZCanvasCoordinates', 'XZegend',planeControllerXZ);
 
-const planeModelYZ = new PlaneModel;
+const planeModelXY = new PlaneModel;
 
-const planeControllerYZ = new PlaneController(planeModelYZ);
+const planeControllerXY = new PlaneController(planeModelXY);
 
-const planeViewYZ = new PlaneView('containerYZ','YZCanvas','YZCanvasCoordinates', 'YZlegend',planeControllerYZ);
+const planeViewXY = new PlaneView('containerXY','XYCanvas','XYCanvasCoordinates', 'XYlegend',planeControllerXY);
 //   const legend = new Legend('XYCanvas', legendData);
 //   legend.render();
 
 window.toggleAddPointMode = function() {
-    planeView.toggleAddPointMode();
-    planeViewYZ.toggleAddPointMode();
+    planeViewXZ.toggleAddPointMode();
+    planeViewXY.toggleAddPointMode();
   };
   
 window.toggleAddLineMode = function() {
-    planeView.toggleAddLineMode();
-    planeViewYZ.toggleAddLineMode();
+    planeViewXZ.toggleAddLineMode();
+    planeViewXY.toggleAddLineMode();
 };
   
 window.deleteSelected = function() {
-    planeView.deleteSelected();
-    planeViewYZ.deleteSelected();
+    planeViewXZ.deleteSelected();
+    planeViewXY.deleteSelected();
 };

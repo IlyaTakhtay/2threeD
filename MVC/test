@@ -1,0 +1,43 @@
+constructor(/* ... */) {
+    // ...
+    this.isBlocked = false;
+    // ...
+}
+
+onCanvasClick = (event) => {
+    if (this.isBlocked) return;
+
+    const coordinates = this.canvasCoordinates(event);
+    if (this.addPointMode) {
+        this.controller.handleCreateObject(coordinates);
+        console.log('point', coordinates);
+        this.isBlocked = true;
+        this.emitEvent('pointAdded', coordinates);
+    }
+    // ...
+}
+
+blockMovement() {
+    this.canvas.addEventListener('mousemove', this.blockHorizontalMovement);
+}
+
+blockHorizontalMovement = (event) => {
+    event.preventDefault();
+    const coordinates = this.canvasCoordinates(event);
+    coordinates.x = this.dragStart.x;
+    this.drawCanvasCoordinates({ clientX: coordinates.x, clientY: coordinates.y });
+}
+
+listenToEvents(otherPlaneView) {
+    document.addEventListener('pointAdded', (event) => {
+        if (event.target !== this.canvas) {
+            this.isBlocked = false;
+            this.canvas.removeEventListener('mousemove', this.blockHorizontalMovement);
+            const coordinates = event.detail;
+            this.controller.handleCreateObject(coordinates);
+            this.drawObjects();
+        } else {
+            this.blockMovement();
+        }
+    });
+}

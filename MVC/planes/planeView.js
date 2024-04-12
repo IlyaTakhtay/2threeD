@@ -1,5 +1,5 @@
 import { Point, Line} from './planeModel.js';
-import Observer from './utils/observer.js'
+import observer from './utils/observer.js'
 export class ToolBar { // TODO: mb i ne nado
 
 }
@@ -168,7 +168,7 @@ export class PlaneView {
     }
 
     subscribe() {
-        Observer.subscribe('objectUpdated', () => {
+        observer.subscribe('objectUpdated', () => {
             this.drawObjects()
         });
     }
@@ -252,7 +252,8 @@ export class PlaneView {
 
         if (this.addLineMode) {
             if (this.tempLineStart === null) {
-                this.tempLineStart = this.canvasCoordinates(event) ;
+                this.tempLineStart = this.canvasCoordinates(event);
+
             } else {
                 const lineCoordinates = { 
                     x1: this.tempLineStart.x,

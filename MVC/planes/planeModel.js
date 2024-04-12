@@ -1,4 +1,4 @@
-import Observer from './utils/observer.js'
+import observer from './utils/observer.js'
 export class Point {
     #x;
     #y;
@@ -218,7 +218,7 @@ export class PlaneModel {
                 object.pointX = x;
                 object.pointY = y;
                 console.log(object)
-                Observer.dispatch('objectUpdated', object) // TODO
+                observer.dispatch('objectUpdated', object) // TODO
             } else if (object instanceof Line) {
                 if (pointType == 'Point1'){
                     object.linePointX1 = x;

@@ -30,7 +30,7 @@ class Observer {
       this.#setCallbacksFor(eventName, subs);
     }
   
-    dispatch(eventName, data) {
+    dispatch(eventName, data=null) {
       this.#getCallbacksFor(eventName)
         .forEach((callback) => callback(data));
     }
