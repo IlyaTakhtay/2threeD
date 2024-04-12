@@ -20,37 +20,32 @@ export class Point {
 }
 
 export class Line {
-    #x1;
-    #x2;
-    #y1;
-    #y2;
+    #point1;
+    #point2;
     #name;
-    constructor({x1 = null, y1 = null, x2 = null, y2 = null, name = null}) {
-        this.#x1 = x1;
-        this.#y1 = y1;
-        this.#x2 = x2;
-        this.#y2 = y2; 
+    constructor({point1 = null, point2 = null, name = null}) {
+        this.#point1 = point1;
+        this.#point2 = point2;
         this.#name = name;
     }
-    get linePointX1() { return this.#x1 }
-    get linePointY1() { return this.#y1 }
+    get linePointX1() { return this.#point1.pointX }
+    get linePointY1() { return this.#point1.pointY }
 
-    get linePointX2() { return this.#x2 }
-    get linePointY2() { return this.#y2 }
+    get linePointX2() { return this.#point2.pointX }
+    get linePointY2() { return this.#point2.pointY }
 
-    set linePointX1(x1) { this.#x1 = x1 }
-    set linePointY1(y1) { this.#y1 = y1 }
+    set linePointX1(x1) { this.#point1.pointX = x1 }
+    set linePointY1(y1) { this.#point1.pointY = y1 }
 
-    set linePointX2(x2) { this.#x2 = x2 }
-    set linePointY2(y2) { this.#y2 = y2 }
+    set linePointX2(x2) { this.#point2.pointX = x2 }
+    set linePointY2(y2) { this.#point2.pointY = y2 }
 
-    get firstPoint() { return {x:this.#x1, y:this.#y1} }
-    get secondPoint() { return {x:this.#x2, y:this.#y2}}
+    get firstPoint() { return this.#point1 }
+    get secondPoint() { return this.#point2 }
 
-    get name() { return this.#name};
+    get name() { return this.#name };
 
     set name(name) { this.#name = name }
-
 }
 
 export class PlaneModel {
@@ -64,27 +59,51 @@ export class PlaneModel {
     }
 
     // Добавление нового объекта в массив объектов
-    createObject(coordinates, objectName = null) { //TODO: maybe remove objectName as recived value
-        const { x, y, x1, y1, x2, y2 } = coordinates;
+    createObject(coordinates, objectName = null) {
+        const { x, y, x1, y1, x2, y2, radius } = coordinates;
         if ((x !== undefined) && (y !== undefined) && (x1 === undefined) && (y1 === undefined) && (x2 === undefined) && (y2 === undefined)) {
-            const object = new Point({
+            const point = new Point({
                 x: x,
-                y: y, 
-                name: objectName === null ? `Точка ${this.#objects.filter(obj => obj instanceof Point).length + 1}`: objectName,
+                y: y,
+                name: objectName === null ? `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}` : objectName,
             });
-            console.log(this.#objects)
-            this.#objects.push(object);
+            this.objects.push(point);
         }
+
         if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
-            const object = new Line({
-                x1: x1, 
-                y1: y1, 
-                x2: x2, 
-                y2: y2, 
-                name: objectName === null ? `Линия ${this.#objects.filter(obj => obj instanceof Line).length + 1}`: objectName,
+            let point1 = this.findObject({ x: x1, y: y1, radius: radius })?.object;
+            let point2 = this.findObject({ x: x2, y: y2, radius: radius })?.object;
+            console.log("Точки на линию:",point1,point2)
+
+            if (!point1) {
+                point1 = new Point({
+                    x: x1,
+                    y: y1,
+                    name: `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}`,
+                });
+                this.objects.push(point1);
+            }
+
+            if (!point2) {
+                point2 = new Point({
+                    x: x2,
+                    y: y2,
+                    name: `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}`,
+                });
+                this.objects.push(point2);
+            }
+
+            const line = new Line({
+                point1: point1,
+                point2: point2,
+                name: objectName === null ? `Линия ${this.objects.filter(obj => obj instanceof Line).length + 1}` : objectName,
             });
-            this.#objects.push(object);
+            this.objects.push(line);
         }
+    }
+
+    findPointByCoordinates(x, y) {
+        return this.objects.find(obj => obj instanceof Point && obj.pointX === x && obj.pointY === y);
     }
 
     deleteObject(coordinates) {
@@ -116,9 +135,9 @@ export class PlaneModel {
                     const distance = Math.sqrt((item.pointX - x) ** 2 + (item.pointY - y) ** 2);
                     return distance <= radius;
                 } else if (item instanceof Line) {
-                    const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
-                    const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
-                    return distance1 <= radius || distance2 <= radius;
+                    // const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
+                    // const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
+                    // return distance1 <= radius || distance2 <= radius;
                 }
                 return false;
             });
@@ -131,19 +150,19 @@ export class PlaneModel {
                         pointType: 'point'
                     };
                 } else if (item instanceof Line) {
-                    const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
-                    const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
-                    if (distance1 <= radius) {
-                        return {
-                            object: item,
-                            pointType: 'Point1'
-                        };
-                    } else if (distance2 <= radius) {
-                        return {
-                            object: item,
-                            pointType: 'Point2'
-                        };
-                    }
+                    // const distance1 = Math.sqrt((item.linePointX1 - x) ** 2 + (item.linePointY1 - y) ** 2);
+                    // const distance2 = Math.sqrt((item.linePointX2 - x) ** 2 + (item.linePointY2 - y) ** 2);
+                    // if (distance1 <= radius) {
+                    //     return {
+                    //         object: item,
+                    //         pointType: 'Point1'
+                    //     };
+                    // } else if (distance2 <= radius) {
+                    //     return {
+                    //         object: item,
+                    //         pointType: 'Point2'
+                    //     };
+                    // }
                 }
             }
             return null;
@@ -239,56 +258,58 @@ export class PlaneModel {
     }
 
     //Get interetion of lines algo 
-    intersects(point1,point2,point3,point4) {
-        //point1, point2 - line 1
-        //point3, point4 - line 2
-
+    intersects(point1, point2, point3, point4) {
+        // point1, point2 - line 1
+        // point3, point4 - line 2
+    
         var det, gamma, lambda;
-        det = (point2.x - point1.x) * (point4.y - point3.y) - (point4.x - point3.x) * (point2.y - point1.y);
+        det = (point2.pointX - point1.pointX) * (point4.pointY - point3.pointY) - (point4.pointX - point3.pointX) * (point2.pointY - point1.pointY);
         if (det === 0) {
-          return false;
+            return false;
         } else {
-          lambda = ((point4.y - point3.y) * (point4.x - point1.x) + (point3.x - point4.x) * (point4.y - point1.y)) / det;
-          gamma = ((point1.y - point2.y) * (point4.x - point1.x) + (point2.x - point1.x) * (point4.y - point1.y)) / det;
-          return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+            lambda = ((point4.pointY - point3.pointY) * (point4.pointX - point1.pointX) + (point3.pointX - point4.pointX) * (point4.pointY - point1.pointY)) / det;
+            gamma = ((point1.pointY - point2.pointY) * (point4.pointX - point1.pointX) + (point2.pointX - point1.pointX) * (point4.pointY - point1.pointY)) / det;
+            return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
         }
-      };
+    }
 
     // Метод для проверки пересечения линии и прямоугольника
     lineIntersectsRect(line, rect) {
-
-    let linePoint1 = line.firstPoint
-    let linePoint2 = line.secondPoint
+        let linePoint1 = line.firstPoint;
+        let linePoint2 = line.secondPoint;
+        
+        let rectanglePoint1 = new Point({x: rect.x1, y: rect.y1});
+        let rectanglePoint2 = new Point({x: rect.x1, y: rect.y2});
+        let rectanglePoint3 = new Point({x: rect.x2, y: rect.y2});
+        let rectanglePoint4 = new Point({x: rect.x2, y: rect.y1});
     
-    let rectanglePoint1 = {x:rect.x1,y:rect.y1}
-    let rectanglePoint2 = {x:rect.x1,y:rect.y2}
-    let rectanglePoint3 = {x:rect.x2,y:rect.y2}
-    let rectanglePoint4 = {x:rect.x2,y:rect.y1}
-
-    // Получаем координаты начала и конца линии
-    //rect hights:
-    //x1,y1 - lowerLeft ; x1y2 - topLeft, x2y1 - lowerRight, x2y2 - topRight;
-
-    let upperIntersection = this.intersects(linePoint1,linePoint2,rectanglePoint2,rectanglePoint3)
-    let lowerInteersection =  this.intersects(linePoint1,linePoint2,rectanglePoint1,rectanglePoint4)
-    let rightIntercetion = this.intersects(linePoint1,linePoint2,rectanglePoint3,rectanglePoint4)
-    let leftIntersection = this.intersects(linePoint1,linePoint2,rectanglePoint1,rectanglePoint2)
-
-    if ((upperIntersection || lowerInteersection || rightIntercetion || leftIntersection)){
-        console.log("intersected")
-        return true
-    }
-
-    // этот колхоз переделать в функцию 
-    if (((linePoint1.x >= Math.min(rectanglePoint1.x, rectanglePoint3.x)) && (linePoint1.x <= Math.max(rectanglePoint1.x, rectanglePoint3.x))) &&
-    ((linePoint2.x >= Math.min(rectanglePoint1.x, rectanglePoint3.x)) && (linePoint2.x <= Math.max(rectanglePoint1.x, rectanglePoint3.x)))) {
-        if (((linePoint1.y >= Math.min(rectanglePoint1.y, rectanglePoint3.y)) && (linePoint1.y <= Math.max(rectanglePoint1.y, rectanglePoint3.y))) &&
-            ((linePoint2.y >= Math.min(rectanglePoint1.y, rectanglePoint3.y)) && (linePoint2.y <= Math.max(rectanglePoint1.y, rectanglePoint3.y)))) {
+        const intersections = [
+            this.intersects(linePoint1, linePoint2, rectanglePoint1, rectanglePoint2),
+            this.intersects(linePoint1, linePoint2, rectanglePoint2, rectanglePoint3),
+            this.intersects(linePoint1, linePoint2, rectanglePoint3, rectanglePoint4),
+            this.intersects(linePoint1, linePoint2, rectanglePoint4, rectanglePoint1),
+        ];
+    
+        if (intersections.some(Boolean)) {
+            console.log("intersected");
             return true;
         }
+        
+        // Проверка, находятся ли концы линии внутри прямоугольника
+        if (this.pointInsideRectangle(linePoint1, rect) || this.pointInsideRectangle(linePoint2, rect)) {
+            return true;
+        }
+    
+        return false;
     }
-    return false; // Линия не пересекает прямоугольник
+    
+    pointInsideRectangle(point, rect) {
+        return (
+            point.pointX >= rect.x1 &&
+            point.pointX <= rect.x2 &&
+            point.pointY >= rect.y1 &&
+            point.pointY <= rect.y2
+        );
     }
-
 }
 // ТРЕБУЕТСЯ РЕФАКТОРИНГ!!!

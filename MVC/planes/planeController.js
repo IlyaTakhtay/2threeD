@@ -77,4 +77,8 @@ export class PlaneController {
         console.log("Handle update object name")
         this.model.updateObjectName(objectName,newName)
     }
+
+    handleCheckObjectSelection(obj) {
+        return this.model.selectedObjects.has(obj);
+    }
 }

@@ -102,6 +102,8 @@ export class PlaneView {
         this.canvas.width = 640;
         this.canvas.height = 480;
         this.ctx = this.canvas.getContext('2d');
+
+        this.pointRadius = 3;
     
         this.mouseCoordinatesElement = document.createElement('div');
         this.mouseCoordinatesElement.id = coordinatesID;
@@ -165,6 +167,7 @@ export class PlaneView {
         this.canvas.addEventListener('mousedown', this.onMouseDown);
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
+        this.canvas.addEventListener('mouseout', this.onMouseOut);
     }
 
     subscribe() {
@@ -192,32 +195,57 @@ export class PlaneView {
     }
 
     drawObjects() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // нужно чтобы при отпускании мышки не зависал пямоугольник выделения
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.controller.handleObjects().forEach((obj) => {
             if (obj instanceof Point) {
+                if (this.controller.handleCheckObjectSelection(obj)) {
+                    this.ctx.fillStyle = 'blue'; // Устанавливаем синий цвет для выделенных линий
+                } else {
+                    this.ctx.fillStyle = 'black'; // Устанавливаем черный цвет для невыделенных линий
+                }
                 this.ctx.beginPath();
-                this.ctx.arc(obj.pointX, obj.pointY, 3, 0, Math.PI * 2);
+                this.ctx.arc(obj.pointX, obj.pointY, this.pointRadius, 0, Math.PI * 2);
                 this.ctx.fill();
             } else if (obj instanceof Line) {
+                if (this.controller.handleCheckObjectSelection(obj)) {
+                    this.ctx.strokeStyle = 'blue'; // Устанавливаем синий цвет для выделенных линий
+                } else {
+                    this.ctx.strokeStyle = 'black'; // Устанавливаем черный цвет для невыделенных линий
+                }
                 this.ctx.beginPath();
                 this.ctx.moveTo(obj.linePointX1, obj.linePointY1);
                 this.ctx.lineTo(obj.linePointX2, obj.linePointY2);
                 this.ctx.stroke();
             }
         });
-
-        this.Legend.render(this.controller.handleObjects()) //Legend
+    
+        this.Legend.render(this.controller.handleObjects()); //Legend
     }
 
-    drawMovingPoint() {
-        const xSnapped = this.snapCoordinate(this.dragNow.x);
-        const ySnapped = this.snapCoordinate(this.dragNow.y);
+    drawObjectOnline(event) { //TODO: rename and optimise
+        // const xSnapped = this.snapCoordinate(this.canvasCoordinates(event).x);
+        // const ySnapped = this.snapCoordinate(this.canvasCoordinates(event).y);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawObjects();// нужно чтобы не пропадали точки и линии во время переноса объекта
+        this.drawObjects(); // нужно чтобы не пропадали точки и линии во рисования объекта
+        if (this.tempLineStart) {
+            this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
+            this.ctx.beginPath();
+            
+            // Рисуем точку в начале линии
+            this.ctx.arc(this.tempLineStart.x, this.tempLineStart.y, this.pointRadius, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'rgba(128, 128, 128, 0.5)';
+            this.ctx.fill();
+            
+            this.ctx.moveTo(this.tempLineStart.x, this.tempLineStart.y);
+            this.ctx.lineTo(this.canvasCoordinates(event).x, this.canvasCoordinates(event).y);
+            this.ctx.stroke();
+        }
         this.ctx.beginPath();
-        this.ctx.arc(xSnapped, ySnapped, 3, 0, Math.PI * 2);
+        this.ctx.arc(this.canvasCoordinates(event).x, this.canvasCoordinates(event).y, this.pointRadius, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'; // Устанавливаем цвет заливки серым
         this.ctx.fill();
-        this.dragNow = {x:xSnapped, y:ySnapped}
+
+        // this.dragNow = {x:xSnapped, y:ySnapped}
     }
 
     drawSelectionRect() {
@@ -260,6 +288,7 @@ export class PlaneView {
                     y1: this.tempLineStart.y,
                     x2: coordinates.x,
                     y2: coordinates.y,
+                    radius: this.pointRadius
                 };
                 this.controller.handleCreateObject(lineCoordinates);
                 this.tempLineStart = null;
@@ -275,9 +304,9 @@ export class PlaneView {
             this.isSelectionDragging = true;
         }
 
-        if ((event.button == 0) && (this.addPointMode == false)) { //Для перемещения точки
+        if ((event.button == 0) && (this.addPointMode == false) && (this.addLineMode == false)) { //Для перемещения точки
             this.dragStart = this.canvasCoordinates(event)
-            const object = this.controller.handleFindObjectName({ x: this.dragStart.x, y: this.dragStart.y, radius: 3 });
+            const object = this.controller.handleFindObjectName({ x: this.dragStart.x, y: this.dragStart.y, radius: this.pointRadius });
             if (object) {
                 this.draggedObject = object;
                 console.log(this.draggedObject)
@@ -299,7 +328,10 @@ export class PlaneView {
             const snappedY = this.snapCoordinate(this.dragNow.y);
             this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
             this.drawObjects();
-            // this.drawMovingPoint();
+            
+        }
+        if ((this.addPointMode || this.addLineMode) && !this.isSelectionDragging){
+            this.drawObjectOnline(event);
         }
 
         if (this.isObjectDragging && this.draggedObject.type == 'Line') { // Перемещение точки
@@ -343,6 +375,11 @@ export class PlaneView {
                 this.draggedObject = null;
             }
         }
+        this.drawObjects();
+    }
+
+    onMouseOut = (event) => {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawObjects();
     }
 
