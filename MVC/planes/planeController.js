@@ -44,6 +44,10 @@ export class PlaneController {
         return this.model.deleteSelectedObjects();
     }
 
+    handleSelectObjectByName(name) {
+        console.log("Handle selection object")
+        return this.model.selectObjectByName(name);
+    }
     handleSelectObjectsInRect(rect){
         console.log("Handle selection objects by rectangle")
         if (!rect){
@@ -75,7 +79,7 @@ export class PlaneController {
 
     handleUpdateObjectName(objectName,newName) {
         console.log("Handle update object name")
-        this.model.updateObjectName(objectName,newName)
+        return this.model.updateObjectName(objectName,newName)
     }
 
     handleCheckObjectSelection(obj) {

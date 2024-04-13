@@ -33,18 +33,25 @@ export class Legend { // should to make it maximally independent to PlaneView
 
             const label = document.createElement('span');
             if (item instanceof Point) {
+                if (this.controller.handleCheckObjectSelection(item)) {
+                    legendItem.classList.toggle('selected');
+                }
                 colorBox.style.backgroundColor = 'black';
                 label.textContent = item.name;
             }
             
             if (item instanceof Line) {
+                if (this.controller.handleCheckObjectSelection(item)) {
+                    legendItem.classList.toggle('selected');
+                }
                 colorBox.style.backgroundColor = 'blue';
                 label.textContent = item.name;
             }
             
             label.addEventListener('dblclick', this.updateObjectName);
             label.addEventListener('contextmenu', this.updateCoordinates);
-            // label.addEventListener('contextmenu', this.handleContextMenu);
+            label.addEventListener('click', this.selectObject);
+
             legendItem.appendChild(colorBox);
             legendItem.appendChild(label);
             this.legendElement.appendChild(legendItem);
@@ -52,21 +59,22 @@ export class Legend { // should to make it maximally independent to PlaneView
     }
     
     updateObjectName = (event) => {
-        if (event.button == 0){
+        if (event.button == 0) {
             const element = event.target; // Элемент, вызвавший событие
             const name = element.textContent;
             const newName = prompt("Введите новое имя:", name);
             if (newName) {
-                this.controller.handleUpdateObjectName(name, newName);
-                element.textContent = newName; // Обновляем отображаемое имя прямо здесь, если это требуется
+                if (this.controller.handleUpdateObjectName(name, newName) === 'exists'){
+                    alert('Такое имя уже есть!')
+                } else {
+                    element.textContent = newName; // Обновляем отображаемое имя прямо здесь, если это требуется
+                } 
             }
         }
     }
 
     updateCoordinates = (event) => {
-        console.log("эээээ")
         if (event.button == 2){
-            console.log("normis")
             const element = event.target;
             const name = element.textContent;
             const newCoord = prompt("Введите новые координаты формата x;y");
@@ -74,6 +82,18 @@ export class Legend { // should to make it maximally independent to PlaneView
                 const [x,y] = newCoord.split(";");
                 this.controller.handleUpdateObjectCoordinates(name, x, y);
             }
+        }
+    }
+
+    selectObject = (event) => {
+        let element = event.target;
+        const name = element.textContent;
+        element = element.parentElement;
+        // console.log(element)
+        if (this.controller.handleSelectObjectByName(name)){
+            console.log(element)
+        } else {
+            console.log("err")
         }
     }
 

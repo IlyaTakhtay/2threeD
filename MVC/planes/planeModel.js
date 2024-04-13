@@ -49,7 +49,9 @@ export class Line {
 }
 
 export class PlaneModel {
-    
+    pointCounter = 1;
+    lineCounter = 1;
+
     #objects;
     #selectedObjects;
     
@@ -65,7 +67,8 @@ export class PlaneModel {
             const point = new Point({
                 x: x,
                 y: y,
-                name: objectName === null ? `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}` : objectName,
+                // name: objectName === null ? `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}` : objectName,
+                name: `Точка ${this.pointCounter++}`,
             });
             this.objects.push(point);
         }
@@ -73,13 +76,13 @@ export class PlaneModel {
         if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
             let point1 = this.findObject({ x: x1, y: y1, radius: radius })?.object;
             let point2 = this.findObject({ x: x2, y: y2, radius: radius })?.object;
-            console.log("Точки на линию:",point1,point2)
 
             if (!point1) {
                 point1 = new Point({
                     x: x1,
                     y: y1,
-                    name: `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}`,
+                    // name: `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}`,
+                    name: `Точка ${this.pointCounter++}`,
                 });
                 this.objects.push(point1);
             }
@@ -88,7 +91,8 @@ export class PlaneModel {
                 point2 = new Point({
                     x: x2,
                     y: y2,
-                    name: `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}`,
+                    // name: `Точка ${this.objects.filter(obj => obj instanceof Point).length + 1}`,
+                    name: `Точка ${this.pointCounter++}`,
                 });
                 this.objects.push(point2);
             }
@@ -96,7 +100,8 @@ export class PlaneModel {
             const line = new Line({
                 point1: point1,
                 point2: point2,
-                name: objectName === null ? `Линия ${this.objects.filter(obj => obj instanceof Line).length + 1}` : objectName,
+                // name: objectName === null ? `Линия ${this.objects.filter(obj => obj instanceof Line).length + 1}` : objectName,
+                name: `Линия ${this.lineCounter++}`,
             });
             this.objects.push(line);
         }
@@ -215,6 +220,18 @@ export class PlaneModel {
         this.#selectedObjects.clear();
     }
 
+    selectObjectByName(name) { //TODO: through try catch use
+        const findedInObjects = this.objects.find(item => item.name === name);
+
+        if (findedInObjects) {
+            this.toggleSelectObject(findedInObjects)
+            observer.dispatch('objectUpdated', findedInObjects) // TODO
+            return true
+        } else {
+            return false
+        }
+    }
+
     selectObjectsInRect(rect) {
         this.#objects.forEach((obj) => {
             if (obj instanceof Point) {
@@ -251,6 +268,9 @@ export class PlaneModel {
     }
 
     updateObjectName(objectName,newName) {
+        if (this.#objects.find( item => item.name === newName)){
+            return 'exists'
+        }
         const object = this.#objects.find(item => item.name === objectName);
         if (object) {
             object.name = newName;
