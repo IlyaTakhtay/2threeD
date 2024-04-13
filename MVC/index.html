@@ -56,17 +56,28 @@
         .navbar button:hover {
             background-color: #45a049;
         }
-        #containerXZ {
+        .container-wrapper {
+        display: flex;
+        flex-direction: column;
+         }
+
+        .top-containers {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        #containerXZ, #containerXY, #containerYZ {
             position: relative;
             width: 640px;
             height: 480px;
+            margin: 20px;
         }
-        #containerXY {
-            position: relative;
-            width: 640px;
-            height: 480px;
-            margin-top: 20px; /* Добавлено отступ сверху, чтобы избежать наложения на #container */
+
+        #containerXZ, #containerXY {
+            margin-right: 20px;
         }
+
         svg[name="gridSVG"], canvas {
             position: absolute;
             top: 0;
@@ -107,11 +118,14 @@
         <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
     </div>
 
-    <div id="containerXZ"></div>
+    <div class="container-wrapper">
+        <div class="top-containers">
+            <div id="containerXZ"></div>
+            <div id="containerXY"></div>
+        </div>
 
-    <div id="containerXY"></div>
-
-    <div id="containerYZ"></div>
+        <div id="containerYZ"></div>
+    </div>
 
 
     <script type="module" src="main.js"></script>
