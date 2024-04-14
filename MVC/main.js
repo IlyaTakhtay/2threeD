@@ -20,6 +20,10 @@ const planeModelYZ = new PlaneModel;
 const planeControllerYZ = new PlaneController(planeModelYZ);
 
 const planeViewYZ = new PlaneView('containerYZ','YZCanvas','YZCanvasCoordinates', 'YZlegend',planeControllerYZ);
+
+planeViewYZ.configure('leftLower')
+planeViewXY.configure('rightUpper')
+planeViewXZ.configure('rightLower')
 //   const legend = new Legend('XYCanvas', legendData);
 //   legend.render();
 

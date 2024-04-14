@@ -121,8 +121,10 @@ export class PlaneView {
         this.canvas.id = canvasID;
         this.canvas.width = 640;
         this.canvas.height = 480;
+    
         this.ctx = this.canvas.getContext('2d');
 
+        this.pointOfOrigin = {x:0,y:0};
         this.pointRadius = 3;
     
         this.mouseCoordinatesElement = document.createElement('div');
@@ -188,6 +190,38 @@ export class PlaneView {
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
         this.canvas.addEventListener('mouseout', this.onMouseOut);
+    }
+
+    // /**
+    //  * Configures the canvas based on the given type.
+    //  * @param {('rightUpper'|'rightLower'|'leftUpper'|'leftLower')} type - The type of configuration.
+    //  */
+    configure(type) {
+        switch (type){
+            case 'rightUpper':
+                this.ctx.scale(-1, 1);
+                this.ctx.translate(-this.canvas.width, 0);
+                this.pointOfOrigin.x = this.canvas.width
+                this.pointOfOrigin.y = 0
+                break;
+            case 'rightLower':
+                this.ctx.scale(-1, -1);
+                this.ctx.translate(-this.canvas.width, -this.canvas.height);
+                this.pointOfOrigin.x = this.canvas.width
+                this.pointOfOrigin.y = this.canvas.height
+                break;
+            case 'leftUpper':
+                console.log('default')
+                break;
+            case 'leftLower':
+                this.ctx.scale(1, -1);
+                this.ctx.translate(0, -this.canvas.height);
+                this.pointOfOrigin.x = 0
+                this.pointOfOrigin.y = this.canvas.height
+                break;
+            default:
+                console.log('default')
+        }
     }
 
     subscribe() {
@@ -280,9 +314,10 @@ export class PlaneView {
 
     canvasCoordinates(event){
         let canvasCorrection = this.canvas.getBoundingClientRect();
-        return { 
-            x: event.clientX - canvasCorrection.left,
-            y: event.clientY - canvasCorrection.top,
+
+        return {
+            x: Math.abs(this.pointOfOrigin.x - (event.clientX - canvasCorrection.left)),
+            y: Math.abs(this.pointOfOrigin.y - (event.clientY - canvasCorrection.top)),
         };
     }
 
