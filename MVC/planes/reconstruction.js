@@ -19,12 +19,12 @@ class Point3D {
 
   set pointX(x) {this.#x = x}
   set pointY(y) {this.#y = y}
-  set pointZ(z) {this.#y = z}
+  set pointZ(z) {this.#z = z}
 
   set name(name) { this.#name = name }
 
   equals(other) {
-    return this.#x === other.pointX && this.#y === other.pointY && this.#z === other.pointZ;
+    return this.pointX === other.pointX && this.pointY === other.pointY && this.pointZ === other.pointZ;
   }
 }
 
@@ -33,6 +33,9 @@ class Line3D {
   #point2;
   #name;
   constructor({point1 = null, point2 = null, name = null}) {
+      if (point1 === null || point2 === null) {
+        throw new Error('point1 and point2 cannot be null');
+      }
       this.#point1 = point1;
       this.#point2 = point2;
       this.#name = name;
@@ -53,8 +56,8 @@ class Line3D {
   set linePointY2(y2) { this.#point2.pointY = y2 }
   set linePointZ2(z2) { this.#point2.pointZ = z2 }
 
-  get firstPoint() { return this.#point1 }
-  get secondPoint() { return this.#point2 }
+  get firstPoint() { console.log(this.#point1); return this.#point1 }
+  get secondPoint() { console.log(this.#point2); return this.#point2 }
 
   get name() { return this.#name };
 
@@ -62,8 +65,9 @@ class Line3D {
   
   equals(other) {
     return (
+      console.log("lines",this,other)
       (this.firstPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint)) ||
-      (this.secondPoint.equals(other.endPoint) && this.secondPoint.equals(other.secondPoint))
+      (this.secondPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint))
     );
   }
 }
@@ -84,16 +88,12 @@ export class Plane3D {
     this.#faces = [];
   }
 
-  pointsExtractor(objects){
-    objects.forEach(element => {
-      if (element instanceof Point) return element
-    });
+  pointsExtractor(objects) {
+    return objects.filter(element => element instanceof Point3D);
   }
-
-  linesExtractor(objects){
-    objects.forEach(element => {
-      if (element instanceof Line) return element
-    });
+  
+  linesExtractor(objects) {
+    return objects.filter(element => element instanceof Line3D);
   }
 
   inputDataConverter({objects, planeAxes}){
@@ -134,7 +134,7 @@ export class Plane3D {
 
   find3DPoints ({frontView, topView, sideView}){
       const result = [];
-    
+      console.log("find3DPoints", frontView, topView, sideView)
       for (const frontElement of frontView) {
         if (frontElement instanceof Point3D) {
           const x1 = frontElement.pointX;
@@ -161,52 +161,61 @@ export class Plane3D {
       return result;
   }
 
-  find3DEdges(points3D, frontEdges, topEdges, sideEdges) {
-    const edges3D = [];
-  
+  find3DLines({points3D, frontLines, topLines, sideLines}) {
+    const Lines3D = [];
+    console.log("find3DLines", frontLines, topLines, sideLines)
     for (let i = 0; i < points3D.length; i++) {
       for (let j = i + 1; j < points3D.length; j++) {
-        const startPoint = points3D[i];
-        const endPoint = points3D[j];
+        const point1 = points3D[i];
+        const point2 = points3D[j];
   
-        const frontEdge = new Edge(
-          new Point3D(startPoint.pointX, null, startPoint.pointZ),
-          new Point3D(endPoint.pointX, null, endPoint.pointZ)
+        const frontLine = new Line3D(
+          new Point3D(point1.pointX, null, point1.pointZ),
+          new Point3D(point2.pointX, null, point2.pointZ)
         );
-        const topEdge = new Edge(
-          new Point3D(startPoint.pointX, startPoint.pointY, null),
-          new Point3D(endPoint.pointX, endPoint.pointY, null)
+        const topLine = new Line3D(
+          new Point3D(point1.pointX, point1.pointY, null),
+          new Point3D(point2.pointX, point2.pointY, null)
         );
-        const sideEdge = new Edge(
-          new Point3D(null, startPoint.pointY, startPoint.pointZ),
-          new Point3D(null, endPoint.pointY, endPoint.pointZ)
+        const sideLine = new Line3D(
+          new Point3D(null, point1.pointY, point1.pointZ),
+          new Point3D(null, point2.pointY, point2.pointZ)
         );
   
         if (
-          (frontEdges.some(e => e.equals(frontEdge)) || startPoint.pointX === endPoint.pointX && startPoint.pointZ === endPoint.pointZ) &&
-          (topEdges.some(e => e.equals(topEdge)) || startPoint.pointX === endPoint.pointX && startPoint.pointY === endPoint.pointY) &&
-          (sideEdges.some(e => e.equals(sideEdge)) || startPoint.pointY === endPoint.pointY && startPoint.pointZ === endPoint.pointZ)
+          (frontLines.some(e => e.equals(frontLine)) || point1.pointX === point2.pointX && point1.pointZ === point2.pointZ) &&
+          (topLines.some(e => e.equals(topLine)) || point1.pointX === point2.pointX && point1.pointY === point2.pointY) &&
+          (sideLines.some(e => e.equals(sideLine)) || point1.pointY === point2.pointY && point1.pointZ === point2.pointZ)
         ) {
-          const edge3D = new Edge(startPoint, endPoint);
-          edges3D.push(edge3D);
+          const Line3D = new Line(point1, point2);
+          Lines3D.push(Line3D);
         }
       }
     }
   
-    return edges3D;
+    return Lines3D;
   }
   
 
   mainProcess ({yzObjects, xzObjects, xyObjects}) {
-    const sideView = ({
-      points:this.pointsExtractor(this.inputDataConverter({objects:yzObjects, planeAxes:'YZ'})),
-      lines:this.linesExtractor(this.inputDataConverter({objects:yzObjects, planeAxes:'YZ'}))
-    });
-    const frontView = this.inputDataConverter({objects:xzObjects, planeAxes:'XZ'})
-    const topView = this.inputDataConverter({objects:xyObjects, planeAxes:'XY'})
-    sideView = 
-    console.log("Planes", sideView,frontView,topView)
-    console.log("3Dpoints", this.find3DPoints({sideView:sideView,frontView:frontView,topView:topView}))
+    const sideView = {
+      points: this.pointsExtractor(this.inputDataConverter({ objects: yzObjects, planeAxes: 'YZ' })),
+      lines: this.linesExtractor(this.inputDataConverter({ objects: yzObjects, planeAxes: 'YZ' }))
+    };
+    
+    const frontView = {
+      points: this.pointsExtractor(this.inputDataConverter({ objects: xzObjects, planeAxes: 'XZ' })),
+      lines: this.linesExtractor(this.inputDataConverter({ objects: xzObjects, planeAxes: 'XZ' }))
+    };
+    
+    const topView = {
+      points: this.pointsExtractor(this.inputDataConverter({ objects: xyObjects, planeAxes: 'XY' })),
+      lines: this.linesExtractor(this.inputDataConverter({ objects: xyObjects, planeAxes: 'XY' }))
+    };
+    console.log("Planes", sideView.lines,frontView.lines,topView.lines)
+    const points3D = this.find3DPoints({sideView:sideView.points,frontView:frontView.points,topView:topView.points});
+    console.log("3Dpoints", points3D)
+    console.log("3DLines", this.find3DLines({points3D:points3D,sideLines:sideView.lines,frontLines:frontView.lines,topLines:topView.lines}))
   }
 
 
