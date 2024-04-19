@@ -60,8 +60,7 @@ class Line3D {
 
   set name(name) { this.#name = name }
   
-  equals(other) {
-    console.log("lines",this,other)
+  equals(other) { 
     return (
       (this.firstPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint)) ||
       (this.secondPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint))
@@ -75,7 +74,8 @@ class Face {
   }
 }
 
-export class Plane3D {
+
+export class Space3DModel {
   #vertices;
   #edges;
   #faces;
@@ -165,7 +165,7 @@ export class Plane3D {
       for (let j = i + 1; j < points3D.length; j++) {
         const point1 = points3D[i];
         const point2 = points3D[j];
-        console.log("Points",point1,point2)
+        
   
         const frontLine = new Line3D({
           point1:new Point3D(point1.pointX, null, point1.pointZ),
@@ -179,11 +179,13 @@ export class Plane3D {
           point1:new Point3D(null, point1.pointY, point1.pointZ),
           point2:new Point3D(null, point2.pointY, point2.pointZ)
         });
-  
+        console.log("Points",point1,point2)
+        console.log("check current lines", frontLine.firstPoint, frontLine.secondPoint, 
+        topLine.firstPoint, topLine.secondPoint, sideLine.firstPoint, sideLine.secondPoint)
         if (
-          (frontLines.some(e => e.equals(frontLine)) || point1.pointX === point2.pointX && point1.pointZ === point2.pointZ) &&
-          (topLines.some(e => e.equals(topLine)) || point1.pointX === point2.pointX && point1.pointY === point2.pointY) &&
-          (sideLines.some(e => e.equals(sideLine)) || point1.pointY === point2.pointY && point1.pointZ === point2.pointZ)
+          (frontLines.some(e => e.equals(frontLine))) &&
+          (topLines.some(e => e.equals(topLine)))  &&
+          (sideLines.some(e => e.equals(sideLine))) 
         ) {
           const line3D = new Line3D({point1:point1, point2:point2});
           Lines3D.push(line3D);
