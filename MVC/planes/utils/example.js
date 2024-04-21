@@ -9,9 +9,9 @@ export function firstExample (frontPlaneModel, sidePlaneModel, topPlaneModel) {
     const point3 = new Point({x:40, y:80, name: 'Point 2'});
 
     // Добавление точек в frontPlaneModel
-    frontPlaneModel.objects.push(point1);
-    frontPlaneModel.objects.push(point2);
-    frontPlaneModel.objects.push(new Line({point1: point1, point2: point2, name: 'Line 1'}));
+    topPlaneModel.objects.push(point1);
+    topPlaneModel.objects.push(point2);
+    topPlaneModel.objects.push(new Line({point1: point1, point2: point2, name: 'Line 1'}));
 
     // Добавление точек в sidePlaneModel
     sidePlaneModel.objects.push(point1);
@@ -19,9 +19,9 @@ export function firstExample (frontPlaneModel, sidePlaneModel, topPlaneModel) {
     sidePlaneModel.objects.push(new Line({point1: point1, point2: point3, name: 'Line 1'}));
 
     // Добавление точек в topPlaneModel
-    topPlaneModel.objects.push(point1);
-    topPlaneModel.objects.push(point3);
-    topPlaneModel.objects.push(new Line({point1: point1, point2: point3, name: 'Line 1'}));
+    frontPlaneModel.objects.push(point1);
+    frontPlaneModel.objects.push(point3);
+    frontPlaneModel.objects.push(new Line({point1: point1, point2: point3, name: 'Line 1'}));
 }
 
 //set second test construction

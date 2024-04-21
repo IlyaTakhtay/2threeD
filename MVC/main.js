@@ -23,16 +23,19 @@ planeViewYZ.configure('leftLower')
 planeViewXY.configure('rightUpper')
 planeViewXZ.configure('rightLower')
 
-const plane3D = new Space3DModel()
+
+//set example
+firstExample(planeModelXZ, planeModelYZ, planeModelXY);
+
+
+const space3DModel = new Space3DModel()
 //   const legend = new Legend('XYCanvas', legendData);
 //   legend.render();
 
-//set example
-secondExample(planeModelXZ, planeModelYZ, planeModelXY);
+const space3DView = new Space3DView("container3D")
 
-const Space3D = new Space3DView("container3D")
 window.reconstruct = function() {
-    plane3D.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});
+    space3DModel.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});
 }   
 
 window.toggleAddPointMode = function() {
