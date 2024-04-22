@@ -1,11 +1,15 @@
-import { PlaneController } from './planes/planeController.js';
 import { Line, PlaneModel, Point } from './planes/planeModel.js';
+import { PlaneController } from './planes/planeController.js';
 import { PlaneView } from './planes/planeView.js';
 import { Legend } from './planes/planeView.js'
-import { firstExample, secondExample } from './planes/utils/example.js';
 
-import { Space3DModel } from './planes/reconstruction.js';
-import { Space3DView } from './planes/planeView.js';
+import observer from './planes/utils/observer.js';
+
+import { Space3DModel } from './3D/space3DModel.js';
+import { Space3DView } from './3D/space3DView.js';
+
+import { firstExample, secondExample } from './planes/utils/example.js';
+import { Space3DController } from './3D/space3DController.js';
 
 const planeModelXZ = new PlaneModel;
 const planeControllerXZ = new PlaneController(planeModelXZ);
@@ -22,20 +26,21 @@ const planeViewYZ = new PlaneView('containerYZ','YZCanvas','YZCanvasCoordinates'
 planeViewYZ.configure('leftLower')
 planeViewXY.configure('rightUpper')
 planeViewXZ.configure('rightLower')
-
-
-//set example
-firstExample(planeModelXZ, planeModelYZ, planeModelXY);
-
-
-const space3DModel = new Space3DModel()
 //   const legend = new Legend('XYCanvas', legendData);
 //   legend.render();
 
-const space3DView = new Space3DView("container3D")
+
+//set example
+secondExample(planeModelXZ, planeModelYZ, planeModelXY);
+
+
+const space3DModel = new Space3DModel()
+const space3DController = new Space3DController(space3DModel);
+const space3DView = new Space3DView("container3D",space3DController);
 
 window.reconstruct = function() {
-    space3DModel.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});
+    observer.dispatch('reconstruct', {yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects})
+    // space3DModel.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});
 }   
 
 window.toggleAddPointMode = function() {
