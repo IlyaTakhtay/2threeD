@@ -16,30 +16,32 @@ export class Space3DView {
         this.renderer.setClearColor(0xffffff);
         this.container.appendChild(this.renderer.domElement);
 
-        this.camera.position.z = 5;
-
+        this.camera.position.set(30, 30, 30);
+        this.camera.lookAt(0, 0, 0);
+        
+        this.gridSize = 20;
         this.gridHelper = new THREE.GridHelper(this.gridSize, this.gridSize);
         this.scene.add(this.gridHelper);
 
         this.controller = controller;
-        this.gridSize = 20;
+        
 
         // Добавление OrbitControls для вращения камерой
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
-        this.controls.minDistance = 1;
+        this.controls.minDistance = 20;
         this.controls.maxDistance = 100;
+        this.controls.maxPolarAngle = Math.PI / 2;
 
         window.addEventListener('resize', this.onWindowResize, false);
         
-        this.animate();
-
         // Добавление осей координат
-        const axesHelper = new THREE.AxesHelper(5);
-        this.scene.add(axesHelper);
+        this.axesHelper = new THREE.AxesHelper(7);
+        this.scene.add(this.axesHelper);
 
+        this.animate();
         // Добавление текстовых меток для осей
         const loader = new FontLoader();
         //TODO : fix font link to js.file
@@ -79,6 +81,14 @@ export class Space3DView {
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
     };
+
+    updateGridAndAxesScale() {
+        const distance = this.camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
+        const scale = distance / 10; // Adjust the scaling factor as needed
+      
+        this.gridHelper.scale.set(scale, scale, scale);
+        this.axesHelper.scale.set(scale, scale, scale);
+      }
     
     resetCamera = () => {
         this.camera.position.copy(this.defaultCameraPosition);
@@ -87,24 +97,20 @@ export class Space3DView {
     };
 
     animate = () => {
-        requestAnimationFrame(this.animate);
+        requestAnimationFrame(this.animate.bind(this));
 
-        // Обновление OrbitControls
+        this.updateGridAndAxesScale();
+      
         this.controls.update();
-
         this.renderer.render(this.scene, this.camera);
-
-        // if (this.controller) {
-        //     this.controller.update();
-        // }
     };
 
 
-    // Функция для преобразования Point3D в координаты для THREE.Points
+    // Функция для преобразования Point3D в координаты для THREE.Points + offest к 0;0;0
     convertPointsToPositions(points) {
         const positions = [];
         points.forEach(point => {
-            positions.push(point.pointX, point.pointY, point.pointZ);
+            positions.push(point.pointX - points[0].pointX, point.pointY - points[0].pointY, point.pointZ - points[0].pointZ);
         });
         return positions;
     }
@@ -112,9 +118,10 @@ export class Space3DView {
     // Функция для преобразования Line3D в координаты для THREE.LineSegments
     convertLinesToPositions(lines) {
         const positions = [];
+        const firstPoint = lines[0].firstPoint;
         lines.forEach(line => {
-            positions.push(line.firstPoint.pointX, line.firstPoint.pointY, line.firstPoint.pointZ);
-            positions.push(line.secondPoint.pointX, line.secondPoint.pointY, line.secondPoint.pointZ);
+            positions.push(line.firstPoint.pointX - firstPoint.pointX, line.firstPoint.pointY - firstPoint.pointY, line.firstPoint.pointZ - firstPoint.pointZ);
+            positions.push(line.secondPoint.pointX - firstPoint.pointX, line.secondPoint.pointY - firstPoint.pointY, line.secondPoint.pointZ - firstPoint.pointZ);
         });
         return positions;
     }
@@ -141,11 +148,11 @@ export class Space3DView {
     
         // Создаем геометрию и материал для точек
         const pointGeometry = new THREE.BufferGeometry();
-        const pointMaterial = new THREE.PointsMaterial({ color: 0xff0000, size: 3 });
+        const pointMaterial = new THREE.PointsMaterial({ color: 0xff0000, size: 1 });
 
         // Создаем геометрию и материал для линий
         const lineGeometry = new THREE.BufferGeometry();
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff, linewidth: 20 });
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff, linewidth: 1 });
 
         // Получаем точки и линии из this.controller.handleObjects()
         // Добавляем новые объекты из this.controller.handleObjects()
