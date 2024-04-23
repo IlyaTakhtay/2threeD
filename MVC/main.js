@@ -41,7 +41,11 @@ const space3DView = new Space3DView("container3D",space3DController);
 window.reconstruct = function() {
     observer.dispatch('reconstruct', {yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects})
     // space3DModel.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});
-}   
+}
+
+window.switchCamera = function() {
+    space3DView.toggleCamera();
+}
 
 window.toggleAddPointMode = function() {
     planeViewXZ.toggleAddPointMode();

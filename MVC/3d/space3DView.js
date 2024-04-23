@@ -9,22 +9,24 @@ export class Space3DView {
     constructor(containerID, controller=null) {
         this.container = document.getElementById(containerID);
 
+        this.isPerspectiveCamera = true;
+        
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         this.renderer.setClearColor(0xffffff);
         this.container.appendChild(this.renderer.domElement);
 
-        this.camera.position.set(30, 30, 30);
-        this.camera.lookAt(0, 0, 0);
         
         this.gridSize = 20;
         this.gridHelper = new THREE.GridHelper(this.gridSize, this.gridSize);
         this.scene.add(this.gridHelper);
 
         this.controller = controller;
-        
+        this.frustumSize = 20; // Определите frustumSize здесь
+        this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+        this.camera.position.set(30, 30, 30);
+        this.camera.lookAt(0, 0, 0);
 
         // Добавление OrbitControls для вращения камерой
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -33,15 +35,13 @@ export class Space3DView {
         this.controls.screenSpacePanning = false;
         this.controls.minDistance = 20;
         this.controls.maxDistance = 100;
-        this.controls.maxPolarAngle = Math.PI / 2;
 
         window.addEventListener('resize', this.onWindowResize, false);
-        
+        document.addEventListener('keydown', this.onKeyDown);
         // Добавление осей координат
         this.axesHelper = new THREE.AxesHelper(7);
         this.scene.add(this.axesHelper);
 
-        this.animate();
         // Добавление текстовых меток для осей
         const loader = new FontLoader();
         //TODO : fix font link to js.file
@@ -68,7 +68,56 @@ export class Space3DView {
             createAxisLabel('Y', new THREE.Vector3(0, 6, 0));
             createAxisLabel('Z', new THREE.Vector3(0, 0, 6));
         });
+        this.animate();
         this.subscribe();
+    }
+
+    onKeyDown = (event) => {
+        if (event.key === 'c') {
+          this.toggleCamera();
+        }
+      };
+
+
+    toggleCamera() {
+        if (this.isPerspectiveCamera) {
+            // Переключение на ортографическую камеру
+            const aspect = this.container.clientWidth / this.container.clientHeight;
+            const frustumSize = 20;
+            const left = frustumSize * aspect / -2;
+            const right = frustumSize * aspect / 2;
+            const top = frustumSize / 2;
+            const bottom = frustumSize / -2;
+            const near = 0.1;
+            const far = 1000;
+        
+            this.camera = new THREE.OrthographicCamera(left, right, top, bottom, near, far);
+            this.camera.position.set(20, 20, 20);
+            this.camera.lookAt(0, 0, 0);
+            this.camera.zoom = 1; // Установите начальный масштаб для ортографической камеры
+            // Создание объекта OrbitControls
+
+            this.controls.enableRotate = true; // Включение вращения для ортографической камеры
+            this.controls.enableZoom = true; // Включение масштабирования для ортографической камеры
+            this.controls.enablePan = true; // Включение панорамирования для ортографической камеры
+
+        } else {
+            // Переключение на перспективную камеру
+            this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+            this.camera.position.set(30, 30, 30);
+            this.camera.lookAt(0, 0, 0);
+
+            this.controls.enableRotate = true; // Включение вращения для перспективной камеры
+            this.controls.enableZoom = true; // Включение масштабирования для перспективной камеры
+            this.controls.enablePan = true; // Включение панорамирования для перспективной камеры
+            this.controls.minDistance = 20;
+            this.controls.maxDistance = 100;
+        }
+      
+        this.isPerspectiveCamera = !this.isPerspectiveCamera;
+        this.controls.object = this.camera;
+        this.controls.update();
+        this.onWindowResize();
     }
 
     subscribe() {
@@ -76,19 +125,33 @@ export class Space3DView {
             this.render();
       });
     }
+
     onWindowResize = () => {
-        this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+        if (this.isPerspectiveCamera) {
+            this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+        } else {
+            const aspect = this.container.clientWidth / this.container.clientHeight;
+            this.camera.left = -this.frustumSize * aspect / 2;
+            this.camera.right = this.frustumSize * aspect / 2;
+            this.camera.top = this.frustumSize / 2;
+            this.camera.bottom = -this.frustumSize / 2;
+        }
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
     };
 
     updateGridAndAxesScale() {
-        const distance = this.camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
-        const scale = distance / 10; // Adjust the scaling factor as needed
-      
+        let scale;
+        if (this.isPerspectiveCamera) {
+            const distance = this.camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
+            scale = distance / 10;
+        } else {
+            scale = this.camera.zoom * 0.1;
+        }
+        
         this.gridHelper.scale.set(scale, scale, scale);
         this.axesHelper.scale.set(scale, scale, scale);
-      }
+    }
     
     resetCamera = () => {
         this.camera.position.copy(this.defaultCameraPosition);
