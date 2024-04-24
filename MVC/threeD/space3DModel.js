@@ -215,7 +215,7 @@ export class Space3DModel {
         console.log("check current lines", frontLine.firstPoint, frontLine.secondPoint, 
         topLine.firstPoint, topLine.secondPoint, sideLine.firstPoint, sideLine.secondPoint)
         if (
-          (frontLines.some(e => e.equals(frontLine))) &&
+          (frontLines.some(e => e.equals(frontLine))) || (frontLine.) &&
           (topLines.some(e => e.equals(topLine)))  &&
           (sideLines.some(e => e.equals(sideLine))) 
         ) {

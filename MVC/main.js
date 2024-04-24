@@ -5,11 +5,11 @@ import { Legend } from './planes/planeView.js'
 
 import observer from './planes/utils/observer.js';
 
-import { Space3DModel } from './3D/space3DModel.js';
-import { Space3DView } from './3D/space3DView.js';
+import { Space3DModel } from './threeD/space3DModel.js';
+import { Space3DView } from './threeD/space3DView.js';
 
 import { firstExample, secondExample } from './planes/utils/example.js';
-import { Space3DController } from './3D/space3DController.js';
+import { Space3DController } from './threeD/space3DController.js';
 
 const planeModelXZ = new PlaneModel;
 const planeControllerXZ = new PlaneController(planeModelXZ);
