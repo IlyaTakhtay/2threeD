@@ -28,6 +28,19 @@ class Point3D {
   equals(other) {
     return this.pointX === other.pointX && this.pointY === other.pointY && this.pointZ === other.pointZ;
   }
+
+  equalsProjection(other) {
+    const equalXY = 
+                    this.pointX === other.pointX && this.pointY === other.pointY;
+  
+    const equalXZ = 
+                    this.pointX === other.pointX && this.pointZ === other.pointZ;
+  
+    const equalYZ = 
+                    this.pointY === other.pointY && this.pointZ === other.pointZ;
+    
+    return equalXY || equalXZ || equalYZ;
+  }
 }
 
 class Line3D {
@@ -65,7 +78,14 @@ class Line3D {
   equals(other) { 
     return (
       (this.firstPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint)) ||
-      (this.secondPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint))
+      (this.secondPoint.equals(other.firstPoint) && this.firstPoint.equals(other.secondPoint))
+    );
+  }
+
+  equalsProjection(other) { 
+    return (
+      (this.firstPoint.equalsProjection(other.firstPoint) && this.secondPoint.equalsProjection(other.secondPoint)) ||
+      (this.secondPoint.equalsProjection(other.firstPoint) && this.firstPoint.equalsProjection(other.secondPoint))
     );
   }
 }
@@ -193,7 +213,7 @@ export class Space3DModel {
   find3DLines({points3D, frontLines, topLines, sideLines}) {
     const Lines3D = [];
     console.log("find3DLines",points3D, frontLines, topLines, sideLines)
-    for (let i = 0; i < points3D.length; i++) {
+    for (let i = 0; i < 1; i++) {
       for (let j = i + 1; j < points3D.length; j++) {
         const point1 = points3D[i];
         const point2 = points3D[j];
@@ -212,12 +232,30 @@ export class Space3DModel {
           point2:new Point3D(null, point2.pointY, point2.pointZ)
         });
         console.log("Points",point1,point2)
-        console.log("check current lines", frontLine.firstPoint, frontLine.secondPoint, 
-        topLine.firstPoint, topLine.secondPoint, sideLine.firstPoint, sideLine.secondPoint)
+        // console.log("check current lines", frontLine.firstPoint, frontLine.secondPoint, 
+        // topLine.firstPoint, topLine.secondPoint, sideLine.firstPoint, sideLine.secondPoint)
         if (
-          (frontLines.some(e => e.equals(frontLine))) || (frontLine.) &&
-          (topLines.some(e => e.equals(topLine)))  &&
-          (sideLines.some(e => e.equals(sideLine))) 
+          (frontLines.some(e => {
+            if (e.equalsProjection(frontLine)) {
+              console.log("Front lines match:", e, frontLine);
+              return true;
+            }
+            return false;
+          })) &&
+          (topLines.some(e => {
+            if (e.equalsProjection(topLine)) {
+              console.log("Top lines match:", e, topLine);
+              return true;
+            }
+            return false;
+          })) &&
+          (sideLines.some(e => {
+            if (e.equalsProjection(sideLine)) {
+              console.log("Side lines match:", e, sideLine);
+              return true;
+            }
+            return false;
+          }))
         ) {
           const line3D = new Line3D({point1:point1, point2:point2});
           Lines3D.push(line3D);

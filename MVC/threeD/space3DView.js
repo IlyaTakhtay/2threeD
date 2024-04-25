@@ -65,8 +65,8 @@ export class Space3DView {
             };
 
             createAxisLabel('X', new THREE.Vector3(6, 0, 0));
-            createAxisLabel('Y', new THREE.Vector3(0, 6, 0));
-            createAxisLabel('Z', new THREE.Vector3(0, 0, 6));
+            createAxisLabel('Z', new THREE.Vector3(0, 6, 0));
+            createAxisLabel('Y', new THREE.Vector3(0, 0, 6));
         });
         this.animate();
         this.subscribe();
