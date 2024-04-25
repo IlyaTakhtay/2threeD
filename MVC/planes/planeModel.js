@@ -17,6 +17,10 @@ export class Point {
     set pointY(y) {this.#y = y}
 
     set name(name) { this.#name = name }
+
+    equals(other) {
+        return this.pointX === other.pointX && this.pointY === other.pointY;
+    }
 }
 
 export class Line {
@@ -46,6 +50,18 @@ export class Line {
     get name() { return this.#name };
 
     set name(name) { this.#name = name }
+
+    equals(other) {
+        return (
+            (this.firstPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint)) ||
+            (this.secondPoint.equals(other.firstPoint) && this.firstPoint.equals(other.secondPoint))
+            );
+    }
+
+    equalsInDot(other) {
+        return (this.firstPoint.equals(this.secondPoint) && 
+        (this.firstPoint.equals(other.firstPoint) || this.firstPoint.equals(other.secondPoint)))
+    }
 }
 
 export class PlaneModel {

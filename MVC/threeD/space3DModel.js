@@ -74,8 +74,20 @@ class Line3D {
   get name() { return this.#name };
 
   set name(name) { this.#name = name }
+
+  getProjectionOnXY(){
+    return new Line({point1:new Point({x:this.linePointX1,y:this.linePointY1}), point2:new Point({x:this.linePointX2, y:this.linePointY2})})
+  }
   
-  equals(other) { 
+  getProjectionOnYZ(){
+    return new Line({point1:new Point({x:this.linePointY1,y:this.linePointZ1}), point2:new Point({x:this.linePointY2, y:this.linePointZ2})})
+  }
+
+  getProjectionOnXZ(){
+    return new Line({point1:new Point({x:this.linePointX1,y:this.linePointZ1}), point2:new Point({x:this.linePointX2, y:this.linePointZ2})})
+  }
+
+  equals(other) {
     return (
       (this.firstPoint.equals(other.firstPoint) && this.secondPoint.equals(other.secondPoint)) ||
       (this.secondPoint.equals(other.firstPoint) && this.firstPoint.equals(other.secondPoint))
@@ -142,7 +154,7 @@ export class Space3DModel {
   }
   
   linesExtractor(objects) {
-    return objects.filter(element => element instanceof Line3D);
+    return objects.filter(element => element instanceof Line);
   }
 
   inputDataConverter({objects, planeAxes}){
@@ -213,107 +225,64 @@ export class Space3DModel {
   find3DLines({points3D, frontLines, topLines, sideLines}) {
     const Lines3D = [];
     console.log("find3DLines",points3D, frontLines, topLines, sideLines)
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < points3D.length; i++) {
       for (let j = i + 1; j < points3D.length; j++) {
         const point1 = points3D[i];
         const point2 = points3D[j];
-        
-  
-        const frontLine = new Line3D({
-          point1:new Point3D(point1.pointX, null, point1.pointZ),
-          point2:new Point3D(point2.pointX, null, point2.pointZ)
+      
+        const currentLine = new Line3D({point1:point1,point2:point2})
+        console.log("currentLine", currentLine)
+
+        const currentFrontProjection = currentLine.getProjectionOnXZ()
+        const currentSideProjection = currentLine.getProjectionOnYZ()
+        const currentTopProjection = currentLine.getProjectionOnXY()
+
+        console.log("currentLineProetions", currentFrontProjection,currentSideProjection,currentTopProjection)
+
+        const frontCondition = frontLines.some(e => {
+          if (currentFrontProjection.equals(e) || currentFrontProjection.equalsInDot(e)) {
+            console.log("Front lines match:", e, currentFrontProjection);
+            return true;
+          }
         });
-        const topLine = new Line3D({
-          point1:new Point3D(point1.pointX, point1.pointY, null),
-          point2:new Point3D(point2.pointX, point2.pointY, null)
+
+        const sideCondition = sideLines.some(e => {
+          if (currentSideProjection.equals(e) || currentSideProjection.equalsInDot(e)) {
+            console.log("Side lines match:", e, currentFrontProjection);
+            return true;
+          }
         });
-        const sideLine = new Line3D({
-          point1:new Point3D(null, point1.pointY, point1.pointZ),
-          point2:new Point3D(null, point2.pointY, point2.pointZ)
+
+        const topCondition = topLines.some(e => {
+          if (currentTopProjection.equals(e) || currentTopProjection.equalsInDot(e)) {
+            console.log("Top lines match:", e, currentFrontProjection);
+            return true;
+          }
         });
-        console.log("Points",point1,point2)
-        // console.log("check current lines", frontLine.firstPoint, frontLine.secondPoint, 
-        // topLine.firstPoint, topLine.secondPoint, sideLine.firstPoint, sideLine.secondPoint)
-        if (
-          (frontLines.some(e => {
-            if (e.equalsProjection(frontLine)) {
-              console.log("Front lines match:", e, frontLine);
-              return true;
-            }
-            return false;
-          })) &&
-          (topLines.some(e => {
-            if (e.equalsProjection(topLine)) {
-              console.log("Top lines match:", e, topLine);
-              return true;
-            }
-            return false;
-          })) &&
-          (sideLines.some(e => {
-            if (e.equalsProjection(sideLine)) {
-              console.log("Side lines match:", e, sideLine);
-              return true;
-            }
-            return false;
-          }))
-        ) {
-          const line3D = new Line3D({point1:point1, point2:point2});
-          Lines3D.push(line3D);
+        if (topCondition && sideCondition && frontCondition){
+          Lines3D.push(currentLine);
         }
       }
     }
-  
     return Lines3D;
   }
-  // find3DLines({points3D, frontLines, topLines, sideLines}) {
-  //   const Lines3D = [];
 
-  //   for (let i = 0; i < points3D.length; i++) {
-  //     for (let j = i + 1; j < points3D.length; j++) {
-  //       const point1 = points3D[i];
-  //       const point2 = points3D[j];
-
-  //       const frontLine = new Line3D({
-  //         point1: new Point3D(point1.pointX, null, point1.pointZ),
-  //         point2: new Point3D(point2.pointX, null, point2.pointZ)
-  //       });
-  //       const topLine = new Line3D({
-  //         point1: new Point3D(point1.pointX, point1.pointY, null),
-  //         point2: new Point3D(point2.pointX, point2.pointY, null)
-  //       });
-  //       const sideLine = new Line3D({
-  //         point1: new Point3D(null, point1.pointY, point1.pointZ),
-  //         point2: new Point3D(null, point2.pointY, point2.pointZ)
-  //       });
-
-  //       if (frontLines.some(e => e.equals(frontLine)) &&
-  //           (point1.pointY === point2.pointY || topLines.some(e => e.equals(topLine))) &&
-  //           (point1.pointZ === point2.pointZ || sideLines.some(e => e.equals(sideLine)))) {
-  //         const line3D = new Line3D({point1, point2});
-  //         Lines3D.push(line3D);
-  //       }
-  //     }
-  //   }
-
-  //   return Lines3D;
-  // }
-  
 
   mainProcess ({yzObjects, xzObjects, xyObjects}) {
-    this.#edges = [],this.#faces = [],this.#vertices = [] 
+    this.#edges = [],this.#faces = [],this.#vertices = [];
     const sideView = {
       points: this.pointsExtractor(this.inputDataConverter({ objects: yzObjects, planeAxes: 'YZ' })),
-      lines: this.linesExtractor(this.inputDataConverter({ objects: yzObjects, planeAxes: 'YZ' }))
+      lines: this.linesExtractor(yzObjects)
     };
     
     const frontView = {
       points: this.pointsExtractor(this.inputDataConverter({ objects: xzObjects, planeAxes: 'XZ' })),
-      lines: this.linesExtractor(this.inputDataConverter({ objects: xzObjects, planeAxes: 'XZ' }))
+      lines: this.linesExtractor(xzObjects)
     };
     
     const topView = {
       points: this.pointsExtractor(this.inputDataConverter({ objects: xyObjects, planeAxes: 'XY' })),
-      lines: this.linesExtractor(this.inputDataConverter({ objects: xyObjects, planeAxes: 'XY' }))
+      lines: this.linesExtractor(xyObjects)
     };
     console.log("PlanesLines", sideView,frontView,topView)
     console.log("PlanesLines", sideView.lines,frontView.lines,topView.lines)

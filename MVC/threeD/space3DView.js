@@ -12,6 +12,7 @@ export class Space3DView {
         this.isPerspectiveCamera = true;
         
         this.scene = new THREE.Scene();
+    
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         this.renderer.setClearColor(0xffffff);
@@ -21,7 +22,11 @@ export class Space3DView {
         this.gridSize = 20;
         this.gridHelper = new THREE.GridHelper(this.gridSize, this.gridSize);
         this.scene.add(this.gridHelper);
-
+        
+        this.rootObject = new THREE.Object3D();
+        this.rootObject.rotation.x = -Math.PI / 2;
+        this.scene.add(this.rootObject)
+        
         this.controller = controller;
         this.frustumSize = 20; // Определите frustumSize здесь
         this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
@@ -40,8 +45,8 @@ export class Space3DView {
         document.addEventListener('keydown', this.onKeyDown);
         // Добавление осей координат
         this.axesHelper = new THREE.AxesHelper(7);
-        this.scene.add(this.axesHelper);
-
+        this.rootObject.add(this.axesHelper);
+        
         // Добавление текстовых меток для осей
         const loader = new FontLoader();
         //TODO : fix font link to js.file
@@ -61,12 +66,13 @@ export class Space3DView {
                 const material = new THREE.MeshBasicMaterial(materialParams);
                 const label = new THREE.Mesh(geometry, material);
                 label.position.copy(position);
-                this.scene.add(label);
+                label.rotateX(Math.PI / 2)
+                this.rootObject.add(label);
             };
 
             createAxisLabel('X', new THREE.Vector3(6, 0, 0));
-            createAxisLabel('Z', new THREE.Vector3(0, 6, 0));
-            createAxisLabel('Y', new THREE.Vector3(0, 0, 6));
+            createAxisLabel('Y', new THREE.Vector3(0, 6, 0));
+            createAxisLabel('Z', new THREE.Vector3(0, 0, 6));
         });
         this.animate();
         this.subscribe();
@@ -165,7 +171,7 @@ export class Space3DView {
         this.updateGridAndAxesScale();
       
         this.controls.update();
-        this.renderer.render(this.scene, this.camera);
+        this.renderer.render(this.scene,this.camera);
     };
 
 
@@ -195,17 +201,17 @@ export class Space3DView {
     
         // Добавляем сетку, оси и подписи в массив
         objectsToKeep.push(this.gridHelper);
-        objectsToKeep.push(this.scene.children.find(child => child instanceof THREE.AxesHelper));
-        this.scene.children.forEach(child => {
+        objectsToKeep.push(this.rootObject.children.find(child => child instanceof THREE.AxesHelper));
+        this.rootObject.children.forEach(child => {
             if (child.type === 'Mesh' && child.material.transparent) {
                 objectsToKeep.push(child);
             }
         });
     
         // Удаляем все объекты из сцены, кроме тех, что в массиве objectsToKeep
-        this.scene.children.forEach(object => {
+        this.rootObject.children.forEach(object => {
             if (!objectsToKeep.includes(object)) {
-                this.scene.remove(object);
+                this.rootObject.remove(object);
             }
         });
     
@@ -237,8 +243,8 @@ export class Space3DView {
 
         // Добавляем точки и линии в сцену
         
-        this.scene.add(points);
-        this.scene.add(lines);
+        this.rootObject.add(points);
+        this.rootObject.add(lines);
     }
 }
 
