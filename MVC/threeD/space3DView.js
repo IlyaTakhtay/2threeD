@@ -230,7 +230,8 @@ export class Space3DView {
         // Преобразуем Point3D и Line3D в координаты для рендера
         const pointPositions = this.convertPointsToPositions(vertices);
         const linePositions = this.convertLinesToPositions(edges);
-        console.log(pointPositions,linePositions)
+        // console.log(pointPositions,linePositions)
+        
         // Добавляем точки в геометрию
         pointGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pointPositions), 3));
 

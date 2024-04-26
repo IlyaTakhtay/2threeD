@@ -153,6 +153,70 @@ export class Space3DModel {
     return objects.filter(element => element instanceof Point3D);
   }
   
+  mergeLines(lines) {
+    const mergedLines = [];
+  
+    // Создаем копию массива линий
+    const remainingLines = [...lines];
+  
+    while (remainingLines.length > 0) {
+      const chain = [remainingLines[0]];
+      remainingLines.shift();
+  
+      let i = 0;
+      while (i < remainingLines.length) {
+        const lastLine = chain[chain.length - 1];
+        const currentLine = remainingLines[i];
+  
+        if (this.areCollinear(lastLine, currentLine) && this.haveCommonPoint(lastLine, currentLine)) {
+          chain.push(currentLine);
+          remainingLines.splice(i, 1);
+        } else {
+          i++;
+        }
+      }
+  
+      if (chain.length > 1) {
+        const mergedLine = new Line({
+          point1: chain[0].firstPoint,
+          point2: chain[chain.length - 1].secondPoint
+        });
+        mergedLines.push(mergedLine);
+      } else {
+        // mergedLines.push(chain[0]);
+      }
+    }
+    mergedLines.forEach(e => lines.push(e))
+    return lines;
+  }
+  
+  areCollinear(line1, line2) {
+    const p1 = line1.firstPoint;
+    const p2 = line1.secondPoint;
+    const p3 = line2.firstPoint;
+    const p4 = line2.secondPoint;
+  
+    // Проверяем, лежат ли точки на одной прямой
+    if((p2.pointY - p1.pointY) * (p4.pointX - p3.pointX) === (p4.pointY - p3.pointY) * (p2.pointX - p1.pointX)){
+      console.log(p1,p2,p3,p4)
+      return true
+    }
+    // console.log((p2.pointY - p1.pointY) * (p4.pointX - p3.pointX) === (p4.pointY - p3.pointY) * (p2.pointX - p1.pointX))
+    // return (p2.pointY - p1.pointY) * (p4.pointX - p3.pointX) === (p4.pointY - p3.pointY) * (p2.pointX - p1.pointX);
+  }
+  
+  haveCommonPoint(line1, line2) {
+    // Проверяем, имеют ли линии общую точку
+    return (
+      line1.firstPoint.equals(line2.firstPoint) ||
+      line1.firstPoint.equals(line2.secondPoint) ||
+      line1.secondPoint.equals(line2.firstPoint) ||
+      line1.secondPoint.equals(line2.secondPoint)
+    );
+  }
+  //TODO: GPT ALERT
+
+
   linesExtractor(objects) {
     return objects.filter(element => element instanceof Line);
   }
@@ -193,6 +257,8 @@ export class Space3DModel {
       });
   }
 
+
+
   find3DPoints ({frontView, topView, sideView}){
       const result = [];
       console.log("find3DPoints", frontView, topView, sideView)
@@ -231,31 +297,31 @@ export class Space3DModel {
         const point2 = points3D[j];
       
         const currentLine = new Line3D({point1:point1,point2:point2})
-        console.log("currentLine", currentLine)
+        // console.log("currentLine", currentLine)
 
         const currentFrontProjection = currentLine.getProjectionOnXZ()
         const currentSideProjection = currentLine.getProjectionOnYZ()
         const currentTopProjection = currentLine.getProjectionOnXY()
 
-        console.log("currentLineProetions", currentFrontProjection,currentSideProjection,currentTopProjection)
+        // console.log("currentLineProetions", currentFrontProjection,currentSideProjection,currentTopProjection)
 
         const frontCondition = frontLines.some(e => {
           if (currentFrontProjection.equals(e) || currentFrontProjection.equalsInDot(e)) {
-            console.log("Front lines match:", e, currentFrontProjection);
+            // console.log("Front lines match:", e, currentFrontProjection);
             return true;
           }
         });
 
         const sideCondition = sideLines.some(e => {
           if (currentSideProjection.equals(e) || currentSideProjection.equalsInDot(e)) {
-            console.log("Side lines match:", e, currentFrontProjection);
+            // console.log("Side lines match:", e, currentFrontProjection);
             return true;
           }
         });
 
         const topCondition = topLines.some(e => {
           if (currentTopProjection.equals(e) || currentTopProjection.equalsInDot(e)) {
-            console.log("Top lines match:", e, currentFrontProjection);
+            // console.log("Top lines match:", e, currentFrontProjection);
             return true;
           }
         });
@@ -272,18 +338,19 @@ export class Space3DModel {
     this.#edges = [],this.#faces = [],this.#vertices = [];
     const sideView = {
       points: this.pointsExtractor(this.inputDataConverter({ objects: yzObjects, planeAxes: 'YZ' })),
-      lines: this.linesExtractor(yzObjects)
+      lines: this.mergeLines(this.linesExtractor(yzObjects))
     };
     
     const frontView = {
       points: this.pointsExtractor(this.inputDataConverter({ objects: xzObjects, planeAxes: 'XZ' })),
-      lines: this.linesExtractor(xzObjects)
+      lines: this.mergeLines(this.linesExtractor(xzObjects))
     };
     
     const topView = {
       points: this.pointsExtractor(this.inputDataConverter({ objects: xyObjects, planeAxes: 'XY' })),
-      lines: this.linesExtractor(xyObjects)
+      lines: this.mergeLines(this.linesExtractor(xyObjects))
     };
+
     console.log("PlanesLines", sideView,frontView,topView)
     console.log("PlanesLines", sideView.lines,frontView.lines,topView.lines)
     const points3D = this.find3DPoints({sideView:sideView.points,frontView:frontView.points,topView:topView.points});

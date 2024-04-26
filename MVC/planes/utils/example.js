@@ -74,3 +74,71 @@ export function secondExample (frontPlaneModel, sidePlaneModel, topPlaneModel){
     frontPlaneModel.objects.push(new Line({point1: xzSquarePoint3, point2: xzSquarePoint4, name: 'XZ Square Line 3'}));
     frontPlaneModel.objects.push(new Line({point1: xzSquarePoint4, point2: xzSquarePoint1, name: 'XZ Square Line 4'}));
 }
+
+export function thirdExample (frontPlaneModel, sidePlaneModel, topPlaneModel){
+    // Создание точек буквы "T" на плоскости XY
+    const xyTPoint1 = new Point({x:20, y:20, name: 'XY T Point 1'});
+    const xyTPoint2 = new Point({x:20, y:60, name: 'XY T Point 2'});
+    const xyTPoint3 = new Point({x:40, y:60, name: 'XY T Point 3'});
+    const xyTPoint4 = new Point({x:40, y:140, name: 'XY T Point 4'});
+
+    const xyTPoint5 = new Point({x:80, y:140, name: 'XY Point 5'});
+    const xyTPoint6 = new Point({x:80, y:60, name: 'XY Point 6'});
+    const xyTPoint7 = new Point({x:100, y:60, name: 'XY Point 7'});
+    const xyTPoint8 = new Point({x:100, y:20, name: 'XY Point 8'});
+
+    
+    // Добавление точек и линий буквы "T" на плоскость XY
+    topPlaneModel.objects.push(xyTPoint1, xyTPoint2, xyTPoint3, xyTPoint4, xyTPoint5, xyTPoint6, xyTPoint7, xyTPoint8);
+    topPlaneModel.objects.push(new Line({point1: xyTPoint1, point2: xyTPoint2, name: 'XY T Line 1'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint2, point2: xyTPoint3, name: 'XY T Line 2'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint3, point2: xyTPoint4, name: 'XY T Line 3'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint4, point2: xyTPoint5, name: 'XY T Line 4'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint5, point2: xyTPoint6, name: 'XY T Line 5'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint6, point2: xyTPoint7, name: 'XY T Line 6'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint7, point2: xyTPoint8, name: 'XY T Line 7'}));
+    topPlaneModel.objects.push(new Line({point1: xyTPoint8, point2: xyTPoint1, name: 'XY T Line 8'}));
+
+    // Создание точек буквы "T" на плоскости XZ
+    const xzTPoint1 = new Point({x:20, y:20, name: 'XZ T Point 1'});
+    const xzTPoint2 = new Point({x:20, y:60, name: 'XZ T Point 2'});
+    const xzTPoint3 = new Point({x:40, y:60, name: 'XZ T Point 3'});
+    const xzTPoint4 = new Point({x:80, y:60, name: 'XZ T Point 4'});
+    
+    const xzTPoint5 = new Point({x:100, y:60, name: 'XZ T Point 5'});
+    const xzTPoint6 = new Point({x:100, y:20, name: 'XZ T Point 6'});
+    const xzTPoint7 = new Point({x:80, y:20, name: 'XZ T Point 7'});
+    const xzTPoint8 = new Point({x:40, y:20, name: 'XZ T Point 8'});
+
+    // Добавление точек и линий буквы "T" на плоскость XZ
+    frontPlaneModel.objects.push(xzTPoint1, xzTPoint2, xzTPoint3, xzTPoint4, xzTPoint5, xzTPoint6, xzTPoint7, xzTPoint8);
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint1, point2: xzTPoint2, name: 'XZ T Line 1'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint2, point2: xzTPoint3, name: 'XZ T Line 2'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint3, point2: xzTPoint4, name: 'XZ T Line 3'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint4, point2: xzTPoint5, name: 'XZ T Line 4'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint5, point2: xzTPoint6, name: 'XZ T Line 5'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint7, name: 'XZ T Line 6'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint7, point2: xzTPoint8, name: 'XZ T Line 7'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint8, point2: xzTPoint1, name: 'XZ T Line 8'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint4, point2: xzTPoint7, name: 'XZ T Line 9'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint3, point2: xzTPoint8, name: 'XZ T Line 10'}));
+
+    // Создание точек буквы "T" на плоскости YZ
+    const yzTPoint1 = new Point({x:20, y:20, name: 'YZ T Point 1'});
+    const yzTPoint2 = new Point({x:60, y:20, name: 'YZ T Point 2'});
+    const yzTPoint3 = new Point({x:140, y:20, name: 'YZ T Point 3'});
+    const yzTPoint4 = new Point({x:140, y:60, name: 'YZ T Point 4'});
+    const yzTPoint5 = new Point({x:60, y:60, name: 'YZ T Point 5'});
+    const yzTPoint6 = new Point({x:20, y:60, name: 'YZ T Point 6'});
+
+    // Добавление точек и линий буквы "T" на плоскость YZ
+    sidePlaneModel.objects.push(yzTPoint1, yzTPoint2, yzTPoint3, yzTPoint4, yzTPoint5, yzTPoint6);
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint1, point2: yzTPoint2, name: 'YZ T Line 1'}));
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint2, point2: yzTPoint3, name: 'YZ T Line 2'}));
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint3, point2: yzTPoint4, name: 'YZ T Line 3'}));
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint4, point2: yzTPoint5, name: 'YZ T Line 4'}));
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint5, point2: yzTPoint6, name: 'YZ T Line 5'}));
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint6, point2: yzTPoint1, name: 'YZ T Line 6'}));
+    sidePlaneModel.objects.push(new Line({point1: yzTPoint2, point2: yzTPoint5, name: 'YZ T Line 7'}));
+
+}
