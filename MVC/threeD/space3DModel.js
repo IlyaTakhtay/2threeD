@@ -198,7 +198,6 @@ export class Space3DModel {
   
     // Проверяем, лежат ли точки на одной прямой
     if((p2.pointY - p1.pointY) * (p4.pointX - p3.pointX) === (p4.pointY - p3.pointY) * (p2.pointX - p1.pointX)){
-      console.log(p1,p2,p3,p4)
       return true
     }
     // console.log((p2.pointY - p1.pointY) * (p4.pointX - p3.pointX) === (p4.pointY - p3.pointY) * (p2.pointX - p1.pointX))
@@ -222,11 +221,8 @@ export class Space3DModel {
   }
 
   inputDataConverter({objects, planeAxes}){
-      console.log(objects)
       const points = objects.filter(obj => obj instanceof Point);
       const lines = objects.filter(obj => obj instanceof Line);
-      console.log(points)
-      console.log(lines)
       let convertedPoints;
       switch (planeAxes){
         case 'XY':
@@ -292,7 +288,7 @@ export class Space3DModel {
     const Lines3D = [];
     console.log("find3DLines",points3D, frontLines, topLines, sideLines)
     for (let i = 0; i < points3D.length; i++) {
-      for (let j = i + 1; j < points3D.length; j++) {
+      for (let j = 0; j < points3D.length; j++) {
         const point1 = points3D[i];
         const point2 = points3D[j];
       
