@@ -8,7 +8,7 @@ import observer from './planes/utils/observer.js';
 import { Space3DModel } from './threeD/space3DModel.js';
 import { Space3DView } from './threeD/space3DView.js';
 
-import { firstExample, secondExample, thirdExample } from './planes/utils/example.js';
+import { firstExample, secondExample, thirdExample,fifthExample } from './planes/utils/example.js';
 import { Space3DController } from './threeD/space3DController.js';
 
 const planeModelXZ = new PlaneModel;
@@ -31,7 +31,7 @@ planeViewXZ.configure('rightLower')
 
 
 //set example
-thirdExample(planeModelXZ, planeModelYZ, planeModelXY);
+fifthExample(planeModelXZ, planeModelYZ, planeModelXY);
 
 
 const space3DModel = new Space3DModel()

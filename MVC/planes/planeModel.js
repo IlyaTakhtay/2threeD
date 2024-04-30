@@ -62,6 +62,49 @@ export class Line {
         return (this.firstPoint.equals(this.secondPoint) && 
         (this.firstPoint.equals(other.firstPoint) || this.firstPoint.equals(other.secondPoint)))
     }
+
+    isDotsOnLineBoolean(points, tolerance = 1e-9) {
+        const lineX1 = this.linePointX1;
+        const lineY1 = this.linePointY1;
+        const lineX2 = this.linePointX2;
+        const lineY2 = this.linePointY2;
+    
+        // Если передан массив точек
+        if (Array.isArray(points)) {
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                const x = point.pointX;
+                const y = point.pointY;
+    
+                const crossProduct = (lineX2 - lineX1) * (y - lineY1) - (lineY2 - lineY1) * (x - lineX1);
+                if (Math.abs(crossProduct) > tolerance) {
+                    return false; // Если хотя бы одна точка не лежит на линии, вернуть false
+                }
+    
+                const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
+                if (!(0 <= t && t <= 1)) {
+                    return false; // Если t не находится в диапазоне [0, 1], точка лежит за пределами отрезка
+                }
+            }
+            return true; // Все точки находятся на линии
+        }
+        // Если передана одна точка
+        // TODO: проверить работоспособность функции
+        else {
+            const x = points.pointX;
+            const y = points.pointY;
+    
+            const crossProduct = (lineX2 - lineX1) * (y - lineY1) - (lineY2 - lineY1) * (x - lineX1);
+            if (Math.abs(crossProduct) > tolerance) {
+                return false;
+            }
+    
+            const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
+            return 0 <= t && t <= 1;
+        }
+    }
+    
+    
 }
 
 export class PlaneModel {
