@@ -127,6 +127,9 @@ export class PlaneView {
 
         this.pointOfOrigin = {x:0,y:0};
         this.pointRadius = 3;
+        this.lineWidth = 0.5; //TODO: make implementation on code
+        this.pointSelectionTolerance = this.pointRadius;
+        this.lineSelectionTolerance = this.lineWidth * 6;
     
         this.mouseCoordinatesElement = document.createElement('div');
         this.mouseCoordinatesElement.id = coordinatesID;
@@ -138,22 +141,15 @@ export class PlaneView {
 
         this.controller = controller
         this.gridSize = 20;
-
         // ??
-        this.addLineMode = false;
-        this.addPointMode = false;
+        this.statement = null;
+        this.splitLineMode = true;
         this.tempLineStart = null;
-        this.isSelectionDragging = false;
-        this.isObjectDragging = false;
-        this.draggedObectName = null;
         // ??
-        this.dragStart = { x:null, y:null };
-        this.dragNow = { x:null, y:null };
-        this.dragEnd = { x:null, y:null };
-        
         this.makeGirdOnSVG(container);
         this.bindEventListeners();
         this.subscribe();
+        this.changeStatement(new DefaultStatement(this));
     }
 
     makeGirdOnSVG(container) {
@@ -197,7 +193,7 @@ export class PlaneView {
     //  * Configures the canvas based on the given type.
     //  * @param {('rightUpper'|'rightLower'|'leftUpper'|'leftLower')} type - The type of configuration.
     //  */
-    configure(type) {
+    configurePlaneAxesDirection(type) {
         switch (type){
             case 'rightUpper':
                 this.ctx.scale(-1, 1);
@@ -223,6 +219,10 @@ export class PlaneView {
             default:
                 console.log('default')
         }
+    }
+
+    changeStatement(type) {
+        this.statement = type;
     }
 
     subscribe() {
@@ -308,7 +308,10 @@ export class PlaneView {
         //выделения
         this.drawObjects();// нужно чтобы не пропадали точки и линии во время рисования прямоугольника
         this.ctx.beginPath();
-        this.ctx.rect(this.dragStart.x, this.dragStart.y, this.dragNow.x - this.dragStart.x, this.dragNow.y - this.dragStart.y);
+        this.ctx.rect(this.statement.dragStart.x, 
+            this.statement.dragStart.y, 
+            this.statement.dragNow.x - this.statement.dragStart.x, 
+            this.statement.dragNow.y - this.statement.dragStart.y);
         this.ctx.strokeStyle = 'blue';
         this.ctx.stroke();
     }
@@ -327,130 +330,41 @@ export class PlaneView {
     }
 
     onCanvasClick = (event) => {
-
-        const coordinates = this.canvasCoordinates(event)
-        if (this.addPointMode) {
-            this.controller.handleCreateObject(coordinates);
-            console.log('point', coordinates)
-        }
-
-        if (this.addLineMode) {
-            if (this.tempLineStart === null) {
-                this.tempLineStart = this.canvasCoordinates(event);
-
-            } else {
-                const lineCoordinates = { 
-                    x1: this.tempLineStart.x,
-                    y1: this.tempLineStart.y,
-                    x2: coordinates.x,
-                    y2: coordinates.y,
-                    radius: this.pointRadius
-                };
-                this.controller.handleCreateObject(lineCoordinates);
-                this.tempLineStart = null;
-            }
-        }
-        
-        this.drawObjects();
+        console.log(this.statement)
+        this.statement.onCanvasClick(event);
     }
 
     onMouseDown = (event) => {
-        if (event.button == 2) { //Для выделения прямоугольником
-            this.dragStart = this.canvasCoordinates(event)
-            this.isSelectionDragging = true;
-        }
-
-        if ((event.button == 0) && (this.addPointMode == false) && (this.addLineMode == false)) { //Для перемещения точки
-            this.dragStart = this.canvasCoordinates(event)
-            const object = this.controller.handleFindObjectName({ x: this.dragStart.x, y: this.dragStart.y, radius: this.pointRadius });
-            if (object) {
-                this.draggedObject = object;
-                console.log(this.draggedObject)
-                this.isObjectDragging = true;
-            }
-        }
+        this.statement.onMouseDown(event);
     }
 
     onMouseMove = (event) => {
-
-        if (this.isSelectionDragging) { // Для выделения прямоугольником
-            this.dragNow = this.canvasCoordinates(event);
-            this.drawSelectionRect();
-        }
-
-        if (this.isObjectDragging && this.draggedObject.type == 'Point') { // Перемещение точки
-            this.dragNow = this.canvasCoordinates(event);
-            const snappedX = this.snapCoordinate(this.dragNow.x);
-            const snappedY = this.snapCoordinate(this.dragNow.y);
-            this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
-            this.drawObjects();
-            
-        }
-        if ((this.addPointMode || this.addLineMode) && !this.isSelectionDragging){
-            this.drawObjectOnline(event);
-        }
-
-        if (this.isObjectDragging && this.draggedObject.type == 'Line') { // Перемещение точки
-            this.dragNow = this.canvasCoordinates(event);
-            const snappedX = this.snapCoordinate(this.dragNow.x);
-            const snappedY = this.snapCoordinate(this.dragNow.y);
-            this.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY, this.draggedObject.pointType);
-            this.drawObjects();
-            // this.drawMovingPoint();
-        }
-
+        this.statement.onMouseMove(event)
         // Отображение координат мышки на canvas
         this.drawCanvasCoordinates(event)
     }
 
 
     onMouseUp = (event) => {
-        this.dragEnd = this.canvasCoordinates(event);
-        if (event.button == 2){ // Для выделения прямоугольником
-            this.isSelectionDragging = false;
-            const rect = {
-                x1: Math.min(this.dragStart.x, this.dragEnd.x),
-                y1: Math.min(this.dragStart.y, this.dragEnd.y),
-                x2: Math.max(this.dragStart.x, this.dragEnd.x),
-                y2: Math.max(this.dragStart.y, this.dragEnd.y)
-            };
-            this.controller.handleClearSelectedObjects();
-            this.controller.handleSelectObjectsInRect(rect);
-        }
-        if (event.button == 0){ // Для перемещения точки
-            // if (this.isObjectDragging == true) {
-            //     this.isObjectDragging = false;
-            //     this.controller.handleUpdateObjectCoordinates(
-            //         this.draggedObject.name,
-            //         this.snapCoordinate(this.dragEnd.x), 
-            //         this.snapCoordinate(this.dragEnd.y),
-            //     )
-            // }
-            if (this.isObjectDragging && this.draggedObject) {
-                this.isObjectDragging = false;
-                this.draggedObject = null;
-            }
-        }
-        this.drawObjects();
+        this.statement.onMouseUp(event);
     }
 
     onMouseOut = (event) => {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawObjects();
     }
-
+    toggleDefaultMode() {
+        this.changeStatement(new DefaultStatement(this));
+    }
     toggleAddPointMode() {
-        this.addPointMode = !this.addPointMode;
-        if (!this.addPointMode) {
-            this.addLineMode = false;
-            this.tempLineStart = null;
+        if (!(this.statement instanceof AddPointStatement)){
+            this.changeStatement(new AddPointStatement(this))
         }
     }
 
     toggleAddLineMode() {
-        this.addLineMode = !this.addLineMode;
-        if (this.addLineMode) {
-            this.addPointMode = false;
+        if (!(this.statement instanceof AddLineStatement)){
+            this.changeStatement(new AddLineStatement(this))
         }
     }
 
@@ -458,5 +372,210 @@ export class PlaneView {
         console.log('admit');
         this.controller.handleDeleteSelectedObjects();
         this.drawObjects();
+    }
+}
+class Statement {
+    constructor(planeView) {
+        this.planeView = planeView;
+        this.dragStart = { x:null, y:null };
+        this.dragNow = { x:null, y:null };
+        this.dragEnd = { x:null, y:null };
+    }
+
+    onMouseOut(event) {}
+    onCanvasClick(event) {}
+    onMouseDown(event) {}
+    onMouseMove(event) {}
+    onMouseUp(event) {}
+}
+
+//TODO: add MagnetStatement;
+//TODO: invole SelectionDrag Statemnet;
+class DefaultStatement extends Statement {
+    constructor(planeView) {
+        super(planeView);
+        this.isSelectionDragging = false;
+        this.draggedObectName = null;
+    }
+
+    onCanvasClick(event) {
+        //TODO: make to block selection while dragging
+        const { x, y } = this.planeView.canvasCoordinates(event);
+        const object = this.planeView.controller.handleFindObjectName({ x, y, 
+            width:this.planeView.lineSelectionTolerance, radius: this.planeView.pointSelectionTolerance });
+        if (object) {
+            this.planeView.controller.handleSelectObjectByName(object.name);
+        }
+    }
+
+    onMouseDown(event) {
+        const LEFT_BUTTON = 0;
+        const RIGHT_BUTTON = 2;
+
+        if (event.button === RIGHT_BUTTON) {
+            this.dragStart = this.planeView.canvasCoordinates(event);
+            this.planeView.isSelectionDragging = true;
+        } else if (event.button === LEFT_BUTTON) {
+            this.dragStart = this.planeView.canvasCoordinates(event);
+            const object = this.planeView.controller.handleFindObjectName({ x: this.dragStart.x, y: this.dragStart.y, radius: this.planeView.pointSelectionTolerance });
+            if (object) {
+                this.draggedObject = object;
+                console.log(this.draggedObject)
+            }
+        }
+    }
+
+    onMouseMove(event) {
+        if (this.planeView.isSelectionDragging) {
+            this.dragNow = this.planeView.canvasCoordinates(event);
+            this.planeView.drawSelectionRect();
+        } else if (this.draggedObject) {
+            this.dragNow = this.planeView.canvasCoordinates(event);
+            const snappedX = this.planeView.snapCoordinate(this.dragNow.x);
+            const snappedY = this.planeView.snapCoordinate(this.dragNow.y);
+
+            if (this.draggedObject.type === 'Point') {
+                this.planeView.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
+            } else if (this.draggedObject.type === 'Line') { //Legacy ?
+                this.planeView.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY, this.draggedObject.pointType);
+            }
+
+            this.planeView.drawObjects();
+        }
+    }
+
+    onMouseUp(event) {
+        const LEFT_BUTTON = 0;
+        const RIGHT_BUTTON = 2;
+        this.dragEnd = this.planeView.canvasCoordinates(event);
+        if (event.button === RIGHT_BUTTON) {
+            this.planeView.isSelectionDragging = false;
+            const rect = this.getSelectionRect();
+            this.planeView.controller.handleClearSelectedObjects();
+            this.planeView.controller.handleSelectObjectsInRect(rect);
+        }
+        if (event.button == LEFT_BUTTON) {
+            if (this.draggedObject) {
+                this.draggedObject = null;
+            }
+        }
+        this.planeView.drawObjects();
+    }
+    
+    
+    getSelectionRect() {
+        return {
+            x1: Math.min(this.dragStart.x, this.dragEnd.x),
+            y1: Math.min(this.dragStart.y, this.dragEnd.y),
+            x2: Math.max(this.dragStart.x, this.dragEnd.x),
+            y2: Math.max(this.dragStart.y, this.dragEnd.y),
+        };
+    }
+}
+
+class AddPointStatement extends Statement {
+    constructor(planeView) {
+    super(planeView);
+    }
+
+    splitSelectedLine(name){ //TODO: move to option
+        this.planeView.controller.handleSplitSelectedLineByName(coordinates);
+    }
+    
+    onCanvasClick(event) {
+        const { x, y } = this.planeView.canvasCoordinates(event);
+        const coordinates = {
+            x: this.planeView.snapCoordinate(x),
+            y: this.planeView.snapCoordinate(y),
+        };
+        if (this.planeView.splitLineMode){
+            const obj = this.planeView.controller.handleFindObjectName({x, y, width: this.planeView.pointSelectionTolerance});
+            if (obj){
+                console.log("name",obj.name)
+                this.planeView.controller.handleSplitSelectedLine({name:obj.name, x, y});
+            } else {
+                this.planeView.controller.handleCreateObject(coordinates);
+            }
+        }
+        this.planeView.drawObjects();
+    }
+    
+    onMouseMove(event) {
+        this.planeView.drawObjectOnline(event);
+    }
+}
+    
+class AddLineStatement extends Statement {
+    constructor(planeView) {
+        super(planeView);
+        // this.tempLineStart = null; //TODO: make conclusion || couse render func in planeView also need this data.
+    }
+    
+    onMouseMove(event) {
+        this.planeView.drawObjectOnline(event);
+    }
+    
+    onCanvasClick(event) {
+        const { x, y } = this.planeView.canvasCoordinates(event);
+        let coordinates = {
+            x: this.planeView.snapCoordinate(x),
+            y: this.planeView.snapCoordinate(y),
+        };
+        if (this.planeView.splitLineMode){ // КОРОЧЕ НУЖНО ЧЕТО СДЕЛАТЬ ПОТОМУ ЧТО МЫ ЧЕКАЕМ ОБЪЕКТЫ РЯДОМ 
+            //ВЫДЕЛЕНКИ И НИЧЕГО НЕ НАХОДИМ И ТОЧКУ ПОЛУЧАЕТСЯ НЕКУДА СТАВИТЬ
+
+            // КОРОЧЕ Я ПРИДУМАЛ ФИКС. МОЖЕМ ЧЕКАТЬ ЕСТЬ ЛИ РЯДОМ ТОЧКА и ЕСЛИ ЕСТЬ ОБНУТЛЯТЬ objStart и objEND
+            if (this.planeView.tempLineStart === null) {
+                console.log("click", {x,y})
+                this.planeView.tempLineStart = {x,y};
+            } else {
+                const objStart = this.planeView.controller.handleFindObjectName({x:this.planeView.tempLineStart.x, y:this.planeView.tempLineStart.y, 
+                    width: this.planeView.pointSelectionTolerance});
+                const checkPointNearStart = this.planeView.controller.handleFindObjectName({x:this.planeView.tempLineStart.x, y:this.planeView.tempLineStart.y, 
+                    radius: this.planeView.pointSelectionTolerance});
+                const objEnd = this.planeView.controller.handleFindObjectName({x:x, y:y, 
+                    width: this.planeView.pointSelectionTolerance});
+                const checkPointNearEnd = this.planeView.controller.handleFindObjectName({x:x, y:y, 
+                    radius: this.planeView.pointSelectionTolerance});
+                if (objStart && !checkPointNearStart){
+                    console.log("nameStart",objStart.name)
+                    this.planeView.tempLineStart = this.planeView.controller.handleSplitSelectedLine({name:objStart.name, 
+                        x:this.planeView.tempLineStart.x, y:this.planeView.tempLineStart.y});
+                    console.log("this.planeView.tempLineStart",this.planeView.tempLineStart)
+                     
+                } 
+                if (objEnd && !checkPointNearEnd){
+                    console.log("nameEnd",objEnd.name)
+                    coordinates = this.planeView.controller.handleSplitSelectedLine({name:objEnd.name, x, y});
+                    console.log("this.planeView.coordinates",coordinates)
+
+                }
+                const lineCoordinates = {
+                    x1: this.planeView.tempLineStart.x,
+                    y1: this.planeView.tempLineStart.y,
+                    x2: x,
+                    y2: y,
+                    radius: this.planeView.pointRadius,
+                };
+                this.planeView.controller.handleCreateObject(lineCoordinates);
+                this.planeView.tempLineStart = null;
+
+            }
+        } else {    
+            if (this.planeView.tempLineStart === null) {
+                this.planeView.tempLineStart = coordinates;
+            } else {
+                const lineCoordinates = {
+                    x1: this.planeView.tempLineStart.x,
+                    y1: this.planeView.tempLineStart.y,
+                    x2: coordinates.x,
+                    y2: coordinates.y,
+                    radius: this.planeView.pointRadius,
+                };
+                this.planeView.controller.handleCreateObject(lineCoordinates);
+                this.planeView.tempLineStart = null;
+            }
+        }
+        this.planeView.drawObjects();
     }
 }

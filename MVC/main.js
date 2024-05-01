@@ -23,9 +23,9 @@ const planeModelYZ = new PlaneModel;
 const planeControllerYZ = new PlaneController(planeModelYZ);
 const planeViewYZ = new PlaneView('containerYZ','YZCanvas','YZCanvasCoordinates', 'YZlegend',planeControllerYZ);
 
-planeViewYZ.configure('leftLower')
-planeViewXY.configure('rightUpper')
-planeViewXZ.configure('rightLower')
+planeViewYZ.configurePlaneAxesDirection('leftLower')
+planeViewXY.configurePlaneAxesDirection('rightUpper')
+planeViewXZ.configurePlaneAxesDirection('rightLower')
 //   const legend = new Legend('XYCanvas', legendData);
 //   legend.render();
 
@@ -52,12 +52,16 @@ window.reconstruct = function() {
 window.switchCamera = function() {
     space3DView.toggleCamera();
 }
-
+window.toggleDefaultMode = function(){
+    planeViewXZ.toggleDefaultMode();
+    planeViewXY.toggleDefaultMode();
+    planeViewYZ.toggleDefaultMode();
+}
 window.toggleAddPointMode = function() {
     planeViewXZ.toggleAddPointMode();
     planeViewXY.toggleAddPointMode();
     planeViewYZ.toggleAddPointMode();
-  };
+};
   
 window.toggleAddLineMode = function() {
     planeViewXZ.toggleAddLineMode();

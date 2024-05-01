@@ -183,13 +183,13 @@ export function fifthExample (frontPlaneModel, sidePlaneModel, topPlaneModel){
     frontPlaneModel.objects.push(new Line({point1: xzTPoint1, point2: xzTPoint2, name: 'XZ T Line 1'}));
     frontPlaneModel.objects.push(new Line({point1: xzTPoint2, point2: xzTPoint3, name: 'XZ T Line 2'}));
     frontPlaneModel.objects.push(new Line({point1: xzTPoint3, point2: xzTPoint4, name: 'XZ T Line 3'}));
-    frontPlaneModel.objects.push(new Line({point1: xzTPoint4, point2: xzTPoint5, name: 'XZ T Line 3'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint4, point2: xzTPoint5, name: 'XZ T Line 4'}));
 
-    frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint1, name: 'XZ T Line 4'})); 
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint1, name: 'XZ T Line 5'})); 
     frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint2, name: 'XZ T Line 6'}));
     frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint3, name: 'XZ T Line 7'}));
     frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint4, name: 'XZ T Line 8'}));
-    frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint5, name: 'XZ T Line 5'}));
+    frontPlaneModel.objects.push(new Line({point1: xzTPoint6, point2: xzTPoint5, name: 'XZ T Line 9'}));
 
     // Создание точек пирамиды на плоскости YZ
     const yzTPoint1 = new Point({x:20, y:20, name: 'YZ T Point 1'});
