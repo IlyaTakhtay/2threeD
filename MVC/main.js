@@ -38,6 +38,12 @@ const space3DModel = new Space3DModel()
 const space3DController = new Space3DController(space3DModel);
 const space3DView = new Space3DView("container3D",space3DController);
 
+window.splitLine = function() {
+    planeViewXZ.toggleAddPointMode();
+    planeViewXY.toggleAddPointMode();
+    planeViewYZ.toggleAddPointMode();
+  };
+
 window.reconstruct = function() {
     observer.dispatch('reconstruct', {yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects})
     // space3DModel.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});

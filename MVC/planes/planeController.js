@@ -85,4 +85,10 @@ export class PlaneController {
     handleCheckObjectSelection(obj) {
         return this.model.selectedObjects.has(obj);
     }
+    handleSplitSelectedLine(coordinates){
+        line = this.model.splitSelectedLine(coordinates);
+        console.log("Handle split line")
+        console.log("split line: ", line.name)
+        return
+    }
 }

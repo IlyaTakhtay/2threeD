@@ -80,11 +80,11 @@ export class Line {
                 if (Math.abs(crossProduct) > tolerance) {
                     return false; // Если хотя бы одна точка не лежит на линии, вернуть false
                 }
-    
-                const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
-                if (!(0 <= t && t <= 1)) {
-                    return false; // Если t не находится в диапазоне [0, 1], точка лежит за пределами отрезка
-                }
+                // TODO: ???
+                // const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
+                // if (!(0 <= t && t <= 1)) {
+                //     return false; // Если t не находится в диапазоне [0, 1], точка лежит за пределами отрезка
+                // }
             }
             return true; // Все точки находятся на линии
         }
@@ -98,9 +98,10 @@ export class Line {
             if (Math.abs(crossProduct) > tolerance) {
                 return false;
             }
-    
-            const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
-            return 0 <= t && t <= 1;
+            // TODO: ???
+            // const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
+            // return 0 <= t && t <= 1;
+            return true
         }
     }
     
