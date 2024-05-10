@@ -22,7 +22,7 @@ export class PlaneController {
     }
 
     handleObjects(){
-        console.log("Handle Obects to render")
+        // console.log("Handle Obects to render")
         return this.model.objects;
     }
 
@@ -84,5 +84,12 @@ export class PlaneController {
 
     handleCheckObjectSelection(obj) {
         return this.model.selectedObjects.has(obj);
+    }
+
+    handleSplitSelectedLine(data){//TODO
+        const point = this.model.splitSelectedLine(data);
+        console.log("Handle split line")
+        console.log("split line in point: ", point)
+        return point
     }
 }

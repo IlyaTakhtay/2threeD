@@ -8,7 +8,7 @@ import observer from './planes/utils/observer.js';
 import { Space3DModel } from './threeD/space3DModel.js';
 import { Space3DView } from './threeD/space3DView.js';
 
-import { firstExample, fouthExample, secondExample, thirdExample } from './planes/utils/example.js';
+import { firstExample, fouthExample, secondExample, thirdExample,fifthExample } from './planes/utils/example.js';
 import { Space3DController } from './threeD/space3DController.js';
 
 const planeModelXZ = new PlaneModel;
@@ -23,20 +23,30 @@ const planeModelYZ = new PlaneModel;
 const planeControllerYZ = new PlaneController(planeModelYZ);
 const planeViewYZ = new PlaneView('containerYZ','YZCanvas','YZCanvasCoordinates', 'YZlegend',planeControllerYZ);
 
-planeViewYZ.configure('leftLower')
-planeViewXY.configure('rightUpper')
-planeViewXZ.configure('rightLower')
+planeViewYZ.configurePlaneAxesDirection('leftLower')
+planeViewXY.configurePlaneAxesDirection('rightUpper')
+planeViewXZ.configurePlaneAxesDirection('rightLower')
 //   const legend = new Legend('XYCanvas', legendData);
 //   legend.render();
 
 
 //set example
-fouthExample(planeModelXZ, planeModelYZ, planeModelXY);
+fifthExample(planeModelXZ, planeModelYZ, planeModelXY);
 
 
 const space3DModel = new Space3DModel()
 const space3DController = new Space3DController(space3DModel);
 const space3DView = new Space3DView("container3D",space3DController);
+
+planeViewXY.resizeCanvas(120,120);
+planeViewXZ.resizeCanvas(120,120);
+planeViewYZ.resizeCanvas(120,120);
+
+window.splitLine = function() {
+    planeViewXZ.toggleAddPointMode();
+    planeViewXY.toggleAddPointMode();
+    planeViewYZ.toggleAddPointMode();
+  };
 
 window.reconstruct = function() {
     observer.dispatch('reconstruct', {yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects})
@@ -46,12 +56,16 @@ window.reconstruct = function() {
 window.switchCamera = function() {
     space3DView.toggleCamera();
 }
-
+window.toggleDefaultMode = function(){
+    planeViewXZ.toggleDefaultMode();
+    planeViewXY.toggleDefaultMode();
+    planeViewYZ.toggleDefaultMode();
+}
 window.toggleAddPointMode = function() {
     planeViewXZ.toggleAddPointMode();
     planeViewXY.toggleAddPointMode();
     planeViewYZ.toggleAddPointMode();
-  };
+};
   
 window.toggleAddLineMode = function() {
     planeViewXZ.toggleAddLineMode();

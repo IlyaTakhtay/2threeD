@@ -14,7 +14,7 @@ export class Space3DView {
         this.scene = new THREE.Scene();
     
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+        // this.renderer.setSize(this.container.clientWidth, this.container.clientHeight); - короче отключение этой суеты чет дало, но не совсем
         this.renderer.setClearColor(0xffffff);
         this.container.appendChild(this.renderer.domElement);
 
@@ -38,8 +38,8 @@ export class Space3DView {
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
-        this.controls.minDistance = 20;
-        this.controls.maxDistance = 100;
+        this.controls.minDistance = 10;
+        this.controls.maxDistance = 200;
 
         window.addEventListener('resize', this.onWindowResize, false);
         document.addEventListener('keydown', this.onKeyDown);
@@ -116,8 +116,8 @@ export class Space3DView {
             this.controls.enableRotate = true; // Включение вращения для перспективной камеры
             this.controls.enableZoom = true; // Включение масштабирования для перспективной камеры
             this.controls.enablePan = true; // Включение панорамирования для перспективной камеры
-            this.controls.minDistance = 20;
-            this.controls.maxDistance = 100;
+            this.controls.minDistance = 10;
+            this.controls.maxDistance = 200;
         }
       
         this.isPerspectiveCamera = !this.isPerspectiveCamera;
@@ -143,7 +143,7 @@ export class Space3DView {
             this.camera.bottom = -this.frustumSize / 2;
         }
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, false);
     };
 
     updateGridAndAxesScale() {
