@@ -12,7 +12,7 @@ export class Legend { // should to make it maximally independent to PlaneView
         this.legendID = legendID
         this.canvas = document.getElementById(canvasId);
         this.legendElement = document.createElement('div');
-        this.legendElement.setAttribute("name", "legend");
+        this.legendElement.setAttribute("class", "legend");
         this.legendElement.id = legendID
         this.legendElement.style.marginTop = '10px';
         document.getElementById(containerID).appendChild(this.legendElement)
@@ -120,8 +120,8 @@ export class PlaneView {
 
         this.canvas = document.createElement('canvas');
         this.canvas.id = canvasID;
-        this.canvas.width = 640;
-        this.canvas.height = 480;
+        this.canvas.width = 320;
+        this.canvas.height = 320;
     
         this.ctx = this.canvas.getContext('2d');
 
@@ -136,30 +136,38 @@ export class PlaneView {
         this.mouseCoordinatesElement.setAttribute("name", "mouseCoordinates");
         this.mouseCoordinatesElement.textContent = '0, 0';
         
-        container.appendChild(this.canvas);
+        container.appendChild(this.canvas); // Временный коммент для того, чтобы настроить адаптив.
         container.appendChild(this.mouseCoordinatesElement);
 
-        this.controller = controller
+        this.controller = controller;
+        this.container = container;
         this.gridSize = 20;
         // ??
         this.statement = null;
         this.splitLineMode = true;
         this.tempLineStart = null;
         // ??
-        this.makeGirdOnSVG(container);
+        this.makeGirdOnSVG();
         this.bindEventListeners();
         this.subscribe();
         this.changeStatement(new DefaultStatement(this));
     }
 
-    makeGirdOnSVG(container) {
+    makeGirdOnSVG() { //TODO: rename that is set and resize
         // Создание SVG сетки
-        const gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        gridSVG.setAttribute('name', 'gridSVG');
-        gridSVG.setAttribute("width", "640");
-        gridSVG.setAttribute("height", "480");
-        container.insertBefore(gridSVG, container.firstChild);
-        console.log("grid",container)
+        let gridSVG = this.container.querySelector('[name="gridSVG"]');
+        if (!gridSVG) {
+          gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          gridSVG.setAttribute('name', 'gridSVG');
+          this.container.insertBefore(gridSVG, this.container.firstChild);
+        }
+        gridSVG.setAttribute("width", this.canvas.width);
+        gridSVG.setAttribute("height", this.canvas.height);
+        while(gridSVG.firstChild){
+            gridSVG.removeChild(gridSVG.lastChild); // Тут нужно удалить всех детей, потому что при ресайзе остаются старые линии и руинят все.
+        }
+        
+        console.log("grid", this.container)
         for (let x = 0; x <= gridSVG.getAttribute('width'); x += this.gridSize) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', x);
@@ -194,6 +202,12 @@ export class PlaneView {
     //  * @param {('rightUpper'|'rightLower'|'leftUpper'|'leftLower')} type - The type of configuration.
     //  */
     configurePlaneAxesDirection(type) {
+        this.pointOfOriginLocation = type;
+        this.restoreAxesPosition(type);
+    }
+
+    restoreAxesPosition(type){
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Сбрасываем трансформации
         switch (type){
             case 'rightUpper':
                 this.ctx.scale(-1, 1);
@@ -247,6 +261,20 @@ export class PlaneView {
 
     handleContextMenu = (event) =>  {
         event.preventDefault(); // Отменяем контекстное меню, которое на RMB
+    }
+
+    resizeCanvas(width, height) {
+        // Изменяем размеры canvas
+        this.canvas.width = width;
+        this.canvas.height = height;
+    
+        // Очищаем canvas
+        this.ctx.clearRect(0, 0, width, height);
+    
+        // Перерисовываем объекты с учетом новых размеров
+        this.restoreAxesPosition(this.pointOfOriginLocation);
+        this.makeGirdOnSVG();
+        this.drawObjects();
     }
 
     drawObjects() {
@@ -521,10 +549,7 @@ class AddLineStatement extends Statement {
             x: this.planeView.snapCoordinate(x),
             y: this.planeView.snapCoordinate(y),
         };
-        if (this.planeView.splitLineMode){ // КОРОЧЕ НУЖНО ЧЕТО СДЕЛАТЬ ПОТОМУ ЧТО МЫ ЧЕКАЕМ ОБЪЕКТЫ РЯДОМ 
-            //ВЫДЕЛЕНКИ И НИЧЕГО НЕ НАХОДИМ И ТОЧКУ ПОЛУЧАЕТСЯ НЕКУДА СТАВИТЬ
-
-            // КОРОЧЕ Я ПРИДУМАЛ ФИКС. МОЖЕМ ЧЕКАТЬ ЕСТЬ ЛИ РЯДОМ ТОЧКА и ЕСЛИ ЕСТЬ ОБНУТЛЯТЬ objStart и objEND
+        if (this.planeView.splitLineMode){
             if (this.planeView.tempLineStart === null) {
                 console.log("click", {x,y})
                 this.planeView.tempLineStart = {x,y};
