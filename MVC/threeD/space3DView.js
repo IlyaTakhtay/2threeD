@@ -14,11 +14,12 @@ export class Space3DView {
         this.scene = new THREE.Scene();
     
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-        // this.renderer.setSize(this.container.clientWidth, this.container.clientHeight); - короче отключение этой суеты чет дало, но не совсем
+        
         this.renderer.setClearColor(0xffffff);
         this.container.appendChild(this.renderer.domElement);
 
         
+
         this.gridSize = 20;
         this.gridHelper = new THREE.GridHelper(this.gridSize, this.gridSize);
         this.scene.add(this.gridHelper);
@@ -76,6 +77,7 @@ export class Space3DView {
         });
         this.animate();
         this.subscribe();
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, false); //- короче отключение этой суеты чет дало, но не совсем
     }
 
     onKeyDown = (event) => {
