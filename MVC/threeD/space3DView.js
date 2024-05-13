@@ -12,12 +12,13 @@ export class Space3DView {
         this.isPerspectiveCamera = true;
         
         this.scene = new THREE.Scene();
-    
+        
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         
         this.renderer.setClearColor(0xffffff);
         this.container.appendChild(this.renderer.domElement);
-
+        
+        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, false); //начальная установка размера окна 3dCanvas
         
 
         this.gridSize = 20;
@@ -77,7 +78,6 @@ export class Space3DView {
         });
         this.animate();
         this.subscribe();
-        this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, false); //- короче отключение этой суеты чет дало, но не совсем
     }
 
     onKeyDown = (event) => {

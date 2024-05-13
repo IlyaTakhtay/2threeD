@@ -84,7 +84,7 @@ html, body {
         background-color: #f1f1f1;
     }
       
-    .legend {
+    .plain__legend {
         width: 200px;
         background-color: #e0e0e0;
         padding: 10px;

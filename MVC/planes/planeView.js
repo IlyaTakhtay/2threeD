@@ -1,3 +1,4 @@
+import { div } from 'three/examples/jsm/nodes/Nodes.js';
 import { Point, Line} from './planeModel.js';
 import observer from './utils/observer.js'
 
@@ -12,7 +13,7 @@ export class Legend { // should to make it maximally independent to PlaneView
         this.legendID = legendID
         this.canvas = document.getElementById(canvasId);
         this.legendElement = document.createElement('div');
-        this.legendElement.setAttribute("class", "legend");
+        this.legendElement.setAttribute("class", "plain__legend");
         this.legendElement.id = legendID
         this.legendElement.style.marginTop = '10px';
         document.getElementById(containerID).appendChild(this.legendElement)
@@ -23,9 +24,7 @@ export class Legend { // should to make it maximally independent to PlaneView
         objects.forEach((item) => {
 
             const legendItem = document.createElement('div');
-            legendItem.style.display = 'flex';
-            legendItem.style.alignItems = 'center';
-            legendItem.style.marginBottom = '5px';
+            legendItem.classList.add('plain__legend-item')
 
             const colorBox = document.createElement('div');
             colorBox.style.width = '20px';
@@ -122,8 +121,10 @@ export class PlaneView {
         this.canvas.id = canvasID;
         this.canvas.width = 320;
         this.canvas.height = 320;
-    
+        this.canvas.classList.add('planeCanvas')
         this.ctx = this.canvas.getContext('2d');
+        
+
 
         this.pointOfOrigin = {x:0,y:0};
         this.pointRadius = 3;
@@ -136,7 +137,7 @@ export class PlaneView {
         this.mouseCoordinatesElement.setAttribute("name", "mouseCoordinates");
         this.mouseCoordinatesElement.textContent = '0, 0';
         
-        container.appendChild(this.canvas); // Временный коммент для того, чтобы настроить адаптив.
+        // container.appendChild(this.canvas);
         container.appendChild(this.mouseCoordinatesElement);
 
         this.controller = controller;
@@ -147,8 +148,9 @@ export class PlaneView {
         this.splitLineMode = true;
         this.tempLineStart = null;
         // ??
-        this.makeGirdOnSVG();
         this.bindEventListeners();
+        this.initCanvasWrapper();
+        this.makeGirdOnSVG();
         this.subscribe();
         this.changeStatement(new DefaultStatement(this));
     }
@@ -159,7 +161,9 @@ export class PlaneView {
         if (!gridSVG) {
           gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           gridSVG.setAttribute('name', 'gridSVG');
-          this.container.insertBefore(gridSVG, this.container.firstChild);
+          let canvasWrapper = this.container.querySelector('.plain__canvas-wrapper');
+          console.log(canvasWrapper)
+          canvasWrapper.insertBefore(gridSVG, canvasWrapper.firstChild);
         }
         gridSVG.setAttribute("width", this.canvas.width);
         gridSVG.setAttribute("height", this.canvas.height);
@@ -187,7 +191,12 @@ export class PlaneView {
             gridSVG.appendChild(line);
         }
     }
-
+    initCanvasWrapper(){
+        let canvasWrapper = document.createElement('div');
+        canvasWrapper.classList.add('plain__canvas-wrapper');
+        this.container.insertBefore(canvasWrapper,this.container.firstChild);
+        canvasWrapper.appendChild(this.canvas);
+    }
     bindEventListeners() {
         this.canvas.addEventListener('click', this.onCanvasClick);
         this.canvas.addEventListener('contextmenu', this.handleContextMenu);
