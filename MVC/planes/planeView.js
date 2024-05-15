@@ -27,11 +27,10 @@ export class Legend { // should to make it maximally independent to PlaneView
             legendItem.classList.add('plain__legend-item')
 
             const colorBox = document.createElement('div');
-            colorBox.style.width = '20px';
-            colorBox.style.height = '20px';
-            colorBox.style.marginRight = '10px';
+            colorBox.classList.add('plain__legend-color')
 
             const label = document.createElement('span');
+            label.classList.add('plain__legend-label')
             if (item instanceof Point) {
                 if (this.controller.handleCheckObjectSelection(item)) {
                     legendItem.classList.toggle('selected');
@@ -122,6 +121,7 @@ export class PlaneView {
         this.canvas.width = 320;
         this.canvas.height = 320;
         this.canvas.classList.add('planeCanvas')
+        this.canvas.setAttribute('tabindex', '0');
         this.ctx = this.canvas.getContext('2d');
         
 
@@ -145,6 +145,7 @@ export class PlaneView {
         this.gridSize = 20;
         // ??
         this.statement = null;
+        this.previousStatement = null;
         this.splitLineMode = true;
         this.tempLineStart = null;
         // ??
@@ -204,6 +205,10 @@ export class PlaneView {
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
         this.canvas.addEventListener('mouseout', this.onMouseOut);
+        // Подумать как сделать, типо на самом деле, самое удобное будет, что когда мы нажимае на ctrl у нас включается состояние на перемещение и приближение
+        // , а потом возвращается то, которое было.
+        this.canvas.addEventListener('keydown', this.onKeyDown);
+        this.canvas.addEventListener('keyup', this.onKeyUp);
     }
 
     // /**
@@ -366,13 +371,38 @@ export class PlaneView {
         this.mouseCoordinatesElement.textContent = `${this.canvasCoordinates(event).x}, ${this.canvasCoordinates(event).y}`;
     }
 
+    onKeyDown = (event) => {
+        if (event.key === 'Alt') {
+            event.preventDefault();
+            this.previousStatement = this.statement;
+            this.statement = new CanvasMoveStatement(this);
+            this.statement.onKeyDown();
+        }
+    }
+
+    onKeyUp = (event) => {
+        if (event.key === 'Alt') {
+            event.preventDefault();
+            this.statement.onKeyUp();
+            this.statement = this.previousStatement
+        }
+    }
+    
     onCanvasClick = (event) => {
-        console.log(this.statement)
+        // console.log(this.statement)
         this.statement.onCanvasClick(event);
+        this.canvas.focus();
+        console.log(this.canvas)
+        if (document.activeElement === this.canvas) {
+            console.log('Canvas находится в фокусе');
+          } else {
+            console.log('Canvas не находится в фокусе');
+          }
     }
 
     onMouseDown = (event) => {
         this.statement.onMouseDown(event);
+        
     }
 
     onMouseMove = (event) => {
@@ -424,6 +454,36 @@ class Statement {
     onMouseDown(event) {}
     onMouseMove(event) {}
     onMouseUp(event) {}
+    onKeyDown(event) {}
+    onKeyUp(event) {}
+}
+
+class CanvasMoveStatement extends Statement {
+    constructor(planeView){
+        super(planeView);
+        this.on
+    }
+    onMouseDown(event) {
+        this.dragStart = this.planeView.canvasCoordinates(event);
+        console.log(`Drag started at: (${this.dragStart.x}, ${this.dragStart.y})`);
+    }
+    onMouseMove(event) {
+        this.dragNow = this.planeView.canvasCoordinates(event);
+        console.log(`Drag now at: (${this.dragNow.x}, ${this.dragNow.y})`);
+    }
+    onMouseUp(event){
+        this.dragEnd = this.planeView.canvasCoordinates(event);
+        console.log(`Drag end at: (${this.dragEnd.x}, ${this.dragEnd.y})`);
+    }
+    onKeyDown(event) {
+        this.planeView.canvas.style.cursor = 'move';
+    }
+      
+    onKeyUp(event) {
+        this.planeView.canvas.style.cursor = 'default';
+    }
+    //Короче идея движения canvas конечно замечательная, но есть проблема в том, что у нас тогда приколы с проекциями получаются.
+    // Есть вариант. Если двигаем на одной canvas, то нужно двигать на всех!!!. Можно сделать это как-то через observer. Получается очень крутая вещь у меня этот обсервер.
 }
 
 //TODO: add MagnetStatement;
@@ -433,15 +493,18 @@ class DefaultStatement extends Statement {
         super(planeView);
         this.isSelectionDragging = false;
         this.draggedObectName = null;
+        this.isPlaneMove =null;
     }
 
     onCanvasClick(event) {
         //TODO: make to block selection while dragging
-        const { x, y } = this.planeView.canvasCoordinates(event);
-        const object = this.planeView.controller.handleFindObjectName({ x, y, 
-            width:this.planeView.lineSelectionTolerance, radius: this.planeView.pointSelectionTolerance });
-        if (object) {
-            this.planeView.controller.handleSelectObjectByName(object.name);
+        if (!(this.dragStart.x - this.dragEnd.x)||!(this.dragStart.y - this.dragEnd.y)){
+            const { x, y } = this.planeView.canvasCoordinates(event);
+            const object = this.planeView.controller.handleFindObjectName({ x, y, 
+                width:this.planeView.lineSelectionTolerance, radius: this.planeView.pointSelectionTolerance });
+            if (object) {
+                this.planeView.controller.handleSelectObjectByName(object.name);
+            }
         }
     }
 
@@ -508,6 +571,7 @@ class DefaultStatement extends Statement {
             y2: Math.max(this.dragStart.y, this.dragEnd.y),
         };
     }
+
 }
 
 class AddPointStatement extends Statement {

@@ -38,9 +38,9 @@ const space3DModel = new Space3DModel()
 const space3DController = new Space3DController(space3DModel);
 const space3DView = new Space3DView("container3D",space3DController);
 
-planeViewXY.resizeCanvas(120,120);
-planeViewXZ.resizeCanvas(120,120);
-planeViewYZ.resizeCanvas(120,120);
+// planeViewXY.resizeCanvas(120,120);
+// planeViewXZ.resizeCanvas(120,120);
+// planeViewYZ.resizeCanvas(120,120);
 
 window.splitLine = function() {
     planeViewXZ.toggleAddPointMode();

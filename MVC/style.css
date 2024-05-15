@@ -76,8 +76,8 @@ html, body {
 
    .plain {
         display: grid;
-        grid-template-columns: 1fr 0.25fr;
-        grid-template-rows: 1fr 0.25fr;
+        grid-template-columns: 4fr minmax(120px, 1fr);
+        grid-template-rows: 8fr 1fr;
         /* grid-template-areas:
             "plain__canvas-wrapper plain__legend"
             "mouse-coordinates ."; */
@@ -90,6 +90,7 @@ html, body {
     }
 
     .plain__legend-item {
+        min-width: 60px;
         display: flex;
         align-items: flex-start;
         margin-bottom: 5px;
@@ -106,13 +107,33 @@ html, body {
         font-size: 14px;
         line-height: 1.4;
         color: #333;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
+        min-width: 80px;
         flex: 1 1 auto;
+        
+        /* Стили для переноса текста до 100 пикселей */
+        word-break: break-all;
+        overflow-wrap: break-word;
+        hyphens: auto;
+    }
+    /* ну вот эта вещь работает только по размеру экрана //TODO - разобраться че с этим делать*/
+    @media (min-width: 800px) {
+        .plain__legend-label {
+            /* Стили для скрытия длинного текста после 100 пикселей */
+            display: inline-block;
+            max-width: 150px; /* Установите желаемую максимальную ширину */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            
+            /* Удаление стилей для переноса текста */
+            word-break: normal;
+            overflow-wrap: normal;
+            hyphens: none;
+        }
     }
     
     /* С языками разобраться ещё надо */
-    .plain__legend-label[lang="ru"] {
+    /* .plain__legend-label[lang="ru"] {
         hyphens: auto;
         -webkit-hyphens: auto;
         -moz-hyphens: auto;
@@ -124,12 +145,18 @@ html, body {
         -webkit-hyphens: auto;
         -moz-hyphens: auto;
         -ms-hyphens: auto;
-      }
+      } */
 
     svg[name="gridSVG"],.planeCanvas {
         position: absolute;
         top: 0;
         left: 0;
+        border: 1px solid rgb(0, 0, 0);
+        border-radius: 3px
+    }
+    .planeCanvas:focus{
+        border: 1px solid rgb(255, 0, 0);
+        border-radius: 3px
     }
 
     .plain__legend {
