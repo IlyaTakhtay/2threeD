@@ -1,6 +1,7 @@
 import { div } from 'three/examples/jsm/nodes/Nodes.js';
 import { Point, Line} from './planeModel.js';
 import observer from './utils/observer.js'
+import { isPowerOfTwo } from 'three/src/math/MathUtils.js';
 
 export class ToolBar { // TODO: mb i ne nado
 
@@ -124,7 +125,7 @@ export class PlaneView {
         this.canvas.setAttribute('tabindex', '0');
         this.ctx = this.canvas.getContext('2d');
         
-
+        this.relativeCanvasPosition = {x:0,y:0}
 
         this.pointOfOrigin = {x:0,y:0};
         this.pointRadius = 3;
@@ -291,9 +292,32 @@ export class PlaneView {
         this.drawObjects();
     }
 
+    convertGlobalCoordinatesToLocal(input) {
+        if (typeof input === 'object' && input.hasOwnProperty('x') && input.hasOwnProperty('y')) {
+            return {
+            x: input.x - this.relativeCanvasPosition.x,
+            y: input.y - this.relativeCanvasPosition.y
+            };
+        } else if (input instanceof Point) {
+            console.log(input)
+            input.pointX = input.pointX - this.relativeCanvasPosition.x;
+            input.pointY = input.pointY - this.relativeCanvasPosition.y;
+        } else if (input instanceof Line) {
+            input.linePointX1 = input.linePointX1 - this.relativeCanvasPosition.x;
+            input.linePointY1 = input.linePointY1 - this.relativeCanvasPosition.y;
+            input.linePointX2 = input.linePointX2 - this.relativeCanvasPosition.x;
+            input.linePointY2 = input.linePointY2 - - this.relativeCanvasPosition.y;
+        } else {
+            throw new Error('convertGlobalCoordinatesToLocal получил неподдерживаемый тип входных данных');
+        }
+        console.log(this.relativeCanvasPosition)
+    }
+
     drawObjects() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.controller.handleObjects().forEach((obj) => {
+            this.convertGlobalCoordinatesToLocal(obj)
+            // console.log(obj)
             if (obj instanceof Point) {
                 if (this.controller.handleCheckObjectSelection(obj)) {
                     this.ctx.fillStyle = 'blue'; // Устанавливаем синий цвет для выделенных линий
@@ -463,16 +487,27 @@ class CanvasMoveStatement extends Statement {
         super(planeView);
         this.on
     }
+    setRelativeCanvasPosition(){
+        this.planeView.relativeCanvasPosition = {
+            x: this.planeView.relativeCanvasPosition.x - (this.dragEnd.x - this.dragStart.x),
+            y: this.planeView.relativeCanvasPosition.y - (this.dragEnd.y - this.dragStart.y)
+        };
+    console.log('canvasPosition',this.planeView.relativeCanvasPosition)
+    }
     onMouseDown(event) {
         this.dragStart = this.planeView.canvasCoordinates(event);
         console.log(`Drag started at: (${this.dragStart.x}, ${this.dragStart.y})`);
     }
     onMouseMove(event) {
         this.dragNow = this.planeView.canvasCoordinates(event);
+        // this.setRelativeCanvasPosition();
+        this.planeView.drawObjects();
         console.log(`Drag now at: (${this.dragNow.x}, ${this.dragNow.y})`);
     }
     onMouseUp(event){
         this.dragEnd = this.planeView.canvasCoordinates(event);
+        this.setRelativeCanvasPosition();
+        this.planeView.drawObjects();
         console.log(`Drag end at: (${this.dragEnd.x}, ${this.dragEnd.y})`);
     }
     onKeyDown(event) {
