@@ -237,7 +237,7 @@ export function fouthExample (frontPlaneModel, sidePlaneModel, topPlaneModel){
 
 export function fifthExample (frontPlaneModel, sidePlaneModel, topPlaneModel){
     // Создание точек пирамиды на плоскости XY
-    const xyTPoint1 = new Point({x:20, y:60, name: 'фыыыыыыыы ыыыыыыыыы ыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыыы XY T Point 1'});
+    const xyTPoint1 = new Point({x:20, y:60, name: 'XY T Point 1'});
     const xyTPoint2 = new Point({x:40, y:20, name: 'XY T Point 2'});
     const xyTPoint3 = new Point({x:80, y:20, name: 'XY T Point 3'});
     const xyTPoint4 = new Point({x:100, y:60, name: 'XY T Point 4'});

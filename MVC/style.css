@@ -86,6 +86,9 @@ html, body {
     }
 
     .plain__canvas-wrapper {
+        overflow: hidden;
+        border: 1px solid rgb(0, 0, 0);
+        border-radius: 3px;
         position: relative;
     }
 
@@ -148,11 +151,10 @@ html, body {
       } */
 
     svg[name="gridSVG"],.planeCanvas {
+        overflow: hidden;
         position: absolute;
         top: 0;
         left: 0;
-        border: 1px solid rgb(0, 0, 0);
-        border-radius: 3px
     }
     .planeCanvas:focus{
         border: 1px solid rgb(255, 0, 0);
