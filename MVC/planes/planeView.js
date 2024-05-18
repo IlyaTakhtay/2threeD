@@ -119,18 +119,22 @@ export class PlaneView {
 
         this.canvas = document.createElement('canvas');
         this.canvas.id = canvasID;
-        this.canvas.width = 320;
-        this.canvas.height = 320;
+        this.canvas.width = 240;
+        this.canvas.height = 240;
         this.canvasScale = 1;
-        this.gridFieldSize = {width:this.canvas.width,height:this.canvas.height};
-
+        
         this.canvas.classList.add('planeCanvas')
         this.canvas.setAttribute('tabindex', '0');
         this.ctx = this.canvas.getContext('2d');
+        this.pointOfOrigin = {x:0,y:0};
+        this.canvasTypeByCoordinatesAxesLocation = 'leftUpper'
         
         this.relativeCanvasPosition = {x:0,y:0}
+        
+        this.gridSVG = null;
+        this.gridFieldSize = {width:this.canvas.width,height:this.canvas.height};
 
-        this.pointOfOrigin = {x:0,y:0};
+        
         this.pointRadius = 3;
         this.lineWidth = 0.5; //TODO: make implementation on code
         this.pointSelectionTolerance = this.pointRadius;
@@ -163,66 +167,99 @@ export class PlaneView {
     updateGridSVGPosition() {
         let x = this.relativeCanvasPosition.x;
         let y = this.relativeCanvasPosition.y;
-        
-        // Корректировка позиции сетки при положительных значениях
-        if (x >= 0) {
-            x = -(x % this.gridSize);
-        } else {
-            x = x % this.gridSize;
+        console.log('canvasPos',this.relativeCanvasPosition)
+        switch (this.canvasTypeByCoordinatesAxesLocation) {
+            case 'leftUpper':
+            case 'rightUpper':
+                if (this.relativeCanvasPosition.x >= 0){
+                    x = (x % this.gridSize) - this.gridSize;
+                } else {
+                    x = x % this.gridSize;
+                }
+
+                if (this.relativeCanvasPosition.y <= 0){
+                    y = - (y % this.gridSize) - this.gridSize;
+                } else {
+                    y = - y % this.gridSize;
+                }
+                break;
+            case 'leftLower':
+                if (this.relativeCanvasPosition.x <= 0){
+                    x = - (x % this.gridSize) - this.gridSize;
+                } else {
+                    x = - x % this.gridSize;
+                }
+
+                if (this.relativeCanvasPosition.y >= 0){
+                    y = (y % this.gridSize) - this.gridSize;
+                } else {
+                    y = y % this.gridSize;
+                }
+                break;
+            case 'rightLower':
+                if (this.relativeCanvasPosition.x >= 0){
+                    x = (x % this.gridSize) - this.gridSize;
+                    console.log('first pos')
+                } else {
+                    x = x % this.gridSize;
+                    console.log('second pos')
+                }
+
+                if (this.relativeCanvasPosition.y >= 0){
+                    y = (y % this.gridSize) - this.gridSize;
+                } else {
+                    y = y % this.gridSize;
+                }
+
+                break;
         }
-        
-        if (y >= 0) {
-            y = -(y % this.gridSize);
-        } else {
-            y = y % this.gridSize;
-        }
-        
-        const svg = document.querySelector('svg[name="gridSVG"]');
-        svg.style.transform = `translate(${x}px, ${y}px) scale(${this.canvasScale})`;
+
+        this.gridSVG.style.transform = `translate(${x}px, ${y}px) scale(${this.canvasScale})`;
     }
 
     makeGirdOnSVG() { //TODO: rename that is set and resize
         // Создание SVG сетки
-        let gridSVG = this.container.querySelector('[name="gridSVG"]');
-        if (!gridSVG) {
-        gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        gridSVG.setAttribute('name', 'gridSVG');
+        if (!this.gridSVG) {
+        this.gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.gridSVG.setAttribute('name', 'gridSVG');
         let canvasWrapper = this.container.querySelector('.plain__canvas-wrapper');
         console.log(canvasWrapper)
-        canvasWrapper.insertBefore(gridSVG, canvasWrapper.firstChild);
+        canvasWrapper.insertBefore(this.gridSVG, canvasWrapper.firstChild);
         }
-        gridSVG.setAttribute("width", this.gridFieldSize.width + this.gridSize);
-        gridSVG.setAttribute("height", this.gridFieldSize.height + this.gridSize);
-        while(gridSVG.firstChild){
-            gridSVG.removeChild(gridSVG.lastChild); // Тут нужно удалить всех детей, потому что при ресайзе остаются старые линии и руинят все.
+        this.gridSVG.setAttribute("width", this.gridFieldSize.width + this.gridSize);
+        this.gridSVG.setAttribute("height", this.gridFieldSize.height + this.gridSize);
+        while(this.gridSVG.firstChild){
+            this.gridSVG.removeChild(this.gridSVG.lastChild); // Тут нужно удалить всех детей, потому что при ресайзе остаются старые линии и руинят все.
         }
 
         console.log("grid", this.container)
-        for (let x = -this.gridSize; x <= gridSVG.getAttribute('width'); x += this.gridSize) {
+        for (let x = -this.gridSize; x <= this.gridSVG.getAttribute('width'); x += this.gridSize) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', x);
             line.setAttribute('y1', -this.gridSize);
             line.setAttribute('x2', x);
-            line.setAttribute('y2', gridSVG.getAttribute('height'));
+            line.setAttribute('y2', this.gridSVG.getAttribute('height'));
             line.setAttribute('stroke', 'lightgray');
-            gridSVG.appendChild(line);
+            this.gridSVG.appendChild(line);
         }
-        for (let y = -this.gridSize; y <= gridSVG.getAttribute('height'); y += this.gridSize) {
+        for (let y = -this.gridSize; y <= this.gridSVG.getAttribute('height'); y += this.gridSize) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');            
             line.setAttribute('x1', -this.gridSize);
             line.setAttribute('y1', y);
-            line.setAttribute('x2', gridSVG.getAttribute('width'));
+            line.setAttribute('x2', this.gridSVG.getAttribute('width'));
             line.setAttribute('y2', y);
             line.setAttribute('stroke', 'lightgray');
-            gridSVG.appendChild(line);
+            this.gridSVG.appendChild(line);
         }
     }
+
     initCanvasWrapper(){
         let canvasWrapper = document.createElement('div');
         canvasWrapper.classList.add('plain__canvas-wrapper');
         this.container.insertBefore(canvasWrapper,this.container.firstChild);
         canvasWrapper.appendChild(this.canvas);
     }
+
     bindEventListeners() {
         this.canvas.addEventListener('click', this.onCanvasClick);
         this.canvas.addEventListener('contextmenu', this.handleContextMenu);
@@ -254,14 +291,17 @@ export class PlaneView {
                 this.ctx.translate(-this.canvas.width, 0);
                 this.pointOfOrigin.x = this.canvas.width
                 this.pointOfOrigin.y = 0
+                this.canvasTypeByCoordinatesAxesLocation = 'rightUpper';
                 break;
             case 'rightLower':
                 this.ctx.scale(-1, -1);
                 this.ctx.translate(-this.canvas.width, -this.canvas.height);
                 this.pointOfOrigin.x = this.canvas.width
                 this.pointOfOrigin.y = this.canvas.height
+                this.canvasTypeByCoordinatesAxesLocation = 'rightLower';
                 break;
             case 'leftUpper':
+                this.canvasTypeByCoordinatesAxesLocation = 'leftUpper';
                 console.log('default')
                 break;
             case 'leftLower':
@@ -269,6 +309,7 @@ export class PlaneView {
                 this.ctx.translate(0, -this.canvas.height);
                 this.pointOfOrigin.x = 0
                 this.pointOfOrigin.y = this.canvas.height
+                this.canvasTypeByCoordinatesAxesLocation = 'leftLower';
                 break;
             default:
                 console.log('default')
@@ -318,7 +359,6 @@ export class PlaneView {
     }
 
     convertGlobalCoordinatesToLocal(input) {
-        console.log('oldCoordinates',input)
         if (typeof input === 'object' && input.hasOwnProperty('x') && input.hasOwnProperty('y')) {
             return {
             x: input.x - this.relativeCanvasPosition.x,
@@ -347,7 +387,6 @@ export class PlaneView {
         } else {
             throw new Error('convertGlobalCoordinatesToLocal получил неподдерживаемый тип входных данных');
         }
-        console.log('newCoordinates',input)
     }
 
     drawObjects() {
@@ -377,7 +416,6 @@ export class PlaneView {
                 this.ctx.stroke();
             }
         });
-        console.log(this.controller.handleObjects)
         this.Legend.render(this.controller.handleObjects()); //Legend
     }
 
@@ -456,11 +494,6 @@ export class PlaneView {
         this.statement.onCanvasClick(event);
         this.canvas.focus();
         console.log(this.canvas)
-        if (document.activeElement === this.canvas) {
-            console.log('Canvas находится в фокусе');
-          } else {
-            console.log('Canvas не находится в фокусе');
-          }
     }
 
     onMouseDown = (event) => {
@@ -535,7 +568,6 @@ class CanvasMoveStatement extends Statement {
             x: this.startRelativeCanvasPosition.x - (this.dragNow.x - this.dragStart.x),
             y: this.startRelativeCanvasPosition.y - (this.dragNow.y - this.dragStart.y)
         };
-        console.log('canvasPosition', this.planeView.relativeCanvasPosition);
     }
 
     onMouseDown(event) {
@@ -550,7 +582,6 @@ class CanvasMoveStatement extends Statement {
     }
 
     onMouseMove(event) {
-        console.log('clickOnMove',this.isClicked)
         if (this.isClicked) {
             this.dragNow = this.planeView.canvasCoordinates(event);
             this.setRelativeCanvasPosition();
@@ -563,6 +594,7 @@ class CanvasMoveStatement extends Statement {
     onMouseUp(event) {
         this.dragEnd = this.planeView.canvasCoordinates(event);
         this.isClicked = false;
+        console.log(`Drag started at: (${this.dragStart.x}, ${this.dragStart.y})`);
         console.log(`Drag end at: (${this.dragEnd.x}, ${this.dragEnd.y})`);
     }
 
