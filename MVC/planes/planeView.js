@@ -119,8 +119,8 @@ export class PlaneView {
 
         this.canvas = document.createElement('canvas');
         this.canvas.id = canvasID;
-        this.canvas.width = 240;
-        this.canvas.height = 240;
+        this.canvas.width = 0;
+        this.canvas.height = 0;
         this.canvasScale = 1;
         
         this.canvas.classList.add('planeCanvas')
@@ -128,11 +128,12 @@ export class PlaneView {
         this.ctx = this.canvas.getContext('2d');
         this.pointOfOrigin = {x:0,y:0};
         this.canvasTypeByCoordinatesAxesLocation = 'leftUpper'
-        
+        this.canvasWrapper = null;
+
         this.relativeCanvasPosition = {x:0,y:0}
         
         this.gridSVG = null;
-        this.gridFieldSize = {width:this.canvas.width,height:this.canvas.height};
+        this.gridFieldSize = {width:0,height:0};
 
         
         this.pointRadius = 3;
@@ -159,9 +160,12 @@ export class PlaneView {
         // ??
         this.bindEventListeners();
         this.initCanvasWrapper();
+        this.resizeCanvas(this.canvasWrapper.clientWidth, this.canvasWrapper.clientHeight)
         this.makeGirdOnSVG();
         this.subscribe();
         this.changeStatement(new DefaultStatement(this));
+        console.log('этот контик',this.container)
+        
     }
 
     updateGridSVGPosition() {
@@ -222,10 +226,11 @@ export class PlaneView {
         if (!this.gridSVG) {
         this.gridSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.gridSVG.setAttribute('name', 'gridSVG');
-        let canvasWrapper = this.container.querySelector('.plain__canvas-wrapper');
-        console.log(canvasWrapper)
-        canvasWrapper.insertBefore(this.gridSVG, canvasWrapper.firstChild);
+        this.canvasWrapper.insertBefore(this.gridSVG, this.canvasWrapper.firstChild);
         }
+        this.gridFieldSize.width = this.canvas.width;
+        this.gridFieldSize.height = this.canvas.height;
+
         this.gridSVG.setAttribute("width", this.gridFieldSize.width + this.gridSize);
         this.gridSVG.setAttribute("height", this.gridFieldSize.height + this.gridSize);
         while(this.gridSVG.firstChild){
@@ -254,10 +259,10 @@ export class PlaneView {
     }
 
     initCanvasWrapper(){
-        let canvasWrapper = document.createElement('div');
-        canvasWrapper.classList.add('plain__canvas-wrapper');
-        this.container.insertBefore(canvasWrapper,this.container.firstChild);
-        canvasWrapper.appendChild(this.canvas);
+        this.canvasWrapper = document.createElement('div');
+        this.canvasWrapper.classList.add('plain__canvas-wrapper');
+        this.container.insertBefore(this.canvasWrapper,this.container.firstChild);
+        this.canvasWrapper.appendChild(this.canvas);
     }
 
     bindEventListeners() {
