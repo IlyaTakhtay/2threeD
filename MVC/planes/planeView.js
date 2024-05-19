@@ -172,6 +172,7 @@ export class PlaneView {
         console.log('canvasPos',this.relativeCanvasPosition)
         switch (this.canvasTypeByCoordinatesAxesLocation) {
             case 'leftUpper':
+                break;
             case 'rightUpper':
                 if (this.relativeCanvasPosition.x >= 0){
                     x = (x % this.gridSize) - this.gridSize;
@@ -212,7 +213,6 @@ export class PlaneView {
                 } else {
                     y = y % this.gridSize;
                 }
-
                 break;
         }
 
@@ -234,23 +234,59 @@ export class PlaneView {
         while(this.gridSVG.firstChild){
             this.gridSVG.removeChild(this.gridSVG.lastChild); // Тут нужно удалить всех детей, потому что при ресайзе остаются старые линии и руинят все.
         }
-
-        console.log("grid", this.container)
-        for (let x = -this.gridSize; x <= this.gridSVG.getAttribute('width'); x += this.gridSize) {
+        let xDirection, yDirection, xStart, yStart;
+        let gridWidth = parseInt(this.gridSVG.getAttribute('width'));
+        let gridHeight = parseInt(this.gridSVG.getAttribute('height'));
+        switch (this.canvasTypeByCoordinatesAxesLocation) {
+            case 'leftUpper':
+                xDirection = 1;
+                yDirection = 1;
+                xStart = 0;
+                yStart = 0;
+                break;
+            case 'rightUpper':
+                xDirection = -1;
+                yDirection = 1;
+                xStart = gridWidth;
+                yStart = 0;
+                break;
+            case 'rightLower':
+                xDirection = -1;
+                yDirection = -1;
+                xStart = gridWidth;
+                yStart = gridHeight;
+                break;
+            case 'leftLower':
+                xDirection = 1;
+                yDirection = -1;
+                xStart = 0;
+                yStart = gridHeight;
+                break;
+            default:
+                xDirection = 1;
+                yDirection = 1;
+                xStart = 0;
+                yStart = 0;
+                break;
+        }
+        // Рисуем горизонтальные линии
+        for (let y = yStart; (yStart === 0 ? y <= gridHeight : y >= 0); y += this.gridSize * yDirection) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', x);
-            line.setAttribute('y1', -this.gridSize);
-            line.setAttribute('x2', x);
-            line.setAttribute('y2', this.gridSVG.getAttribute('height'));
+            line.setAttribute('x1', xStart);
+            line.setAttribute('y1', y);
+            line.setAttribute('x2', xStart + gridWidth * xDirection);
+            line.setAttribute('y2', y);
             line.setAttribute('stroke', 'lightgray');
             this.gridSVG.appendChild(line);
         }
-        for (let y = -this.gridSize; y <= this.gridSVG.getAttribute('height'); y += this.gridSize) {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');            
-            line.setAttribute('x1', -this.gridSize);
-            line.setAttribute('y1', y);
-            line.setAttribute('x2', this.gridSVG.getAttribute('width'));
-            line.setAttribute('y2', y);
+
+        // Рисуем вертикальные линии
+        for (let x = xStart; (xStart === 0 ? x <= gridWidth : x >= 0); x += this.gridSize * xDirection) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x);
+            line.setAttribute('y1', yStart);
+            line.setAttribute('x2', x);
+            line.setAttribute('y2', yStart + gridHeight * yDirection);
             line.setAttribute('stroke', 'lightgray');
             this.gridSVG.appendChild(line);
         }
@@ -352,8 +388,8 @@ export class PlaneView {
 
     resizeCanvas(width, height) {
         // Изменяем размеры canvas
-        this.canvas.width = width - width % this.gridSize;
-        this.canvas.height = height - height % this.gridSize;
+        this.canvas.width = width
+        this.canvas.height = height
     
         // Очищаем canvas
         this.ctx.clearRect(0, 0, width, height);
