@@ -348,17 +348,22 @@ export class PlaneView {
     handleContextMenu = (event) =>  {
         event.preventDefault(); // Отменяем контекстное меню, которое на RMB
     }
+    resizeCanvasWrapper(width, height) {
+        this.canvasWrapper.style.width = `${width}px` ;
+        this.canvasWrapper.style.height = `${height}px` ;
+    }
 
     resizeCanvas(width, height) {
         // Изменяем размеры canvas
-        this.canvas.width = width;
-        this.canvas.height = height;
+        this.canvas.width = width - width % this.gridSize;
+        this.canvas.height = height - height % this.gridSize;
     
         // Очищаем canvas
         this.ctx.clearRect(0, 0, width, height);
     
         // Перерисовываем объекты с учетом новых размеров
         this.restoreAxesPosition(this.pointOfOriginLocation);
+        this.resizeCanvasWrapper(this.canvas.width,this.canvas.height);
         this.makeGirdOnSVG();
         this.drawObjects();
     }
@@ -394,6 +399,15 @@ export class PlaneView {
         }
     }
 
+    drawCanvasAxes(){
+        this.ctx.globalAlpha = 0.5;
+        this.ctx.beginPath();
+        this.ctx.arc(-this.relativeCanvasPosition.x, -this.relativeCanvasPosition.y, this.pointRadius, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'orange';
+        this.ctx.fill();
+        this.ctx.globalAlpha = 1;
+    }
+
     drawObjects() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.controller.handleObjects().forEach((obj) => {
@@ -421,6 +435,7 @@ export class PlaneView {
                 this.ctx.stroke();
             }
         });
+        this.drawCanvasAxes();
         this.Legend.render(this.controller.handleObjects()); //Legend
     }
 

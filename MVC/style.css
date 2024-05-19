@@ -1,4 +1,5 @@
 html, body {
+    
     position: fixed;
     margin: 0;
     padding: 0;
@@ -13,6 +14,7 @@ html, body {
     } */
 
     .navbar {
+       
         background-color: #333;
         overflow: hidden;
         flex: 0 0 auto; /* Ширина будет автоматически рассчитываться в соответствии с содержимым */
@@ -49,6 +51,7 @@ html, body {
     
 
     .navbar {
+        
         height: 50px;
         background-color: #333;
         color: #fff;
@@ -67,6 +70,7 @@ html, body {
     }
 
     .container-wrapper {
+        
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(2, 1fr);
@@ -77,24 +81,27 @@ html, body {
     }
 
    .plain {
+        outline: 8px solid rgb(255, 0, 0);
         display: grid;
         grid-template-columns: 4fr minmax(120px, 1fr);
         grid-template-rows: 8fr 1fr;
         /* grid-template-areas:
             "plain__canvas-wrapper plain__legend"
             "mouse-coordinates ."; */
-        gap: 10px;
+        gap: 50px;
         overflow: hidden;
     }
 
     .plain__canvas-wrapper {
         overflow: hidden;
-        border: 1px solid rgb(0, 0, 0);
-        border-radius: 3px;
+        box-sizing: border-box;
+        
+        /* border-radius: 3px; */
         position: relative;
     }
 
     .plain__legend-item {
+        
         min-width: 60px;
         display: flex;
         align-items: flex-start;
@@ -102,6 +109,7 @@ html, body {
     }
       
     .plain__legend-color {
+        
         width: 20px;
         height: 20px;
         margin-right: 10px;
@@ -109,9 +117,10 @@ html, body {
     }
       
     .plain__legend-label {
+        
         font-size: 14px;
         line-height: 1.4;
-        color: #333;
+        /* color: #333; */
         min-width: 80px;
         flex: 1 1 auto;
         
@@ -153,17 +162,25 @@ html, body {
       } */
 
     svg[name="gridSVG"],.planeCanvas {
+        
         overflow: hidden;
         position: absolute;
         top: 0;
         left: 0;
     }
-    .planeCanvas:focus{
+    .plain__canvas-wrapper:focus-within{
+        
+        /* border: 2px solid rgb(255, 0, 0);
+        border-radius: 4px; */
+    }
+/*     
+    .plain__canvas-wrapper:focus-within{
         border: 1px solid rgb(255, 0, 0);
         border-radius: 3px
-    }
+    } */
 
     .plain__legend {
+        
         overflow-x: hidden;
         overflow-y: scroll;
         grid-column: 2;
@@ -200,6 +217,7 @@ html, body {
 
     
     div[name="mouseCoordinates"] {
+        
         overflow: hidden;
         padding: 5px;
         background-color: rgba(255, 255, 255, 0.8);
