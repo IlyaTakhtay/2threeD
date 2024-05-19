@@ -146,6 +146,8 @@ export class PlaneView {
         this.mouseCoordinatesElement.setAttribute("name", "mouseCoordinates");
         this.mouseCoordinatesElement.textContent = '0, 0';
         
+        this.altKeyPressCount = 0;
+
         // container.appendChild(this.canvas);
         container.appendChild(this.mouseCoordinatesElement);
 
@@ -362,6 +364,12 @@ export class PlaneView {
         observer.subscribe('objectUpdated', () => {
             this.drawObjects()
         });
+        observer.subscribe('canvasMoved', (data) => {
+            this.moveCanvasByOther(data);
+        })
+        observer.subscribe('restorePosition', (data) => {
+            this.restoreCanvasPosition(data);
+        })
     }
 
     snapCoordinate(value) {
@@ -403,6 +411,45 @@ export class PlaneView {
 
     onWindowResize = (event) => {
         this.resizeCanvas(this.canvasWrapper.clientWidth, this.canvasWrapper.clientHeight)
+    }
+
+    moveCanvasByOther(data) {
+        let coordinatesCorrection = data[0];
+        let canvasType = data[1];
+        
+        if (canvasType !== this.canvasTypeByCoordinatesAxesLocation){
+            console.log(canvasType,this.canvasTypeByCoordinatesAxesLocation)
+            console.log(this.canvasTypeByCoordinatesAxesLocation,data)
+            if (canvasType == 'rightLower'){
+
+                if (this.canvasTypeByCoordinatesAxesLocation == 'leftLower'){
+                    this.relativeCanvasPosition.y = coordinatesCorrection.y
+                }
+                if (this.canvasTypeByCoordinatesAxesLocation == 'rightUpper'){
+                    this.relativeCanvasPosition.x = coordinatesCorrection.x
+                } 
+            }
+            if (canvasType == 'leftLower'){
+
+                if (this.canvasTypeByCoordinatesAxesLocation == 'rightLower'){
+                    this.relativeCanvasPosition.y = coordinatesCorrection.y
+                }
+                if (this.canvasTypeByCoordinatesAxesLocation == 'rightUpper'){
+                    this.relativeCanvasPosition.y = coordinatesCorrection.x
+                }  
+            }
+            if (canvasType == 'rightUpper'){
+
+                if (this.canvasTypeByCoordinatesAxesLocation == 'rightLower'){
+                    this.relativeCanvasPosition.x = coordinatesCorrection.x
+                }
+                if (this.canvasTypeByCoordinatesAxesLocation == 'leftLower'){
+                    this.relativeCanvasPosition.x = coordinatesCorrection.y
+                }  
+            }
+            this.updateGridSVGPosition()
+            this.drawObjects();  
+        }
     }
 
     convertGlobalCoordinatesToLocal(input) {
@@ -528,7 +575,21 @@ export class PlaneView {
         this.mouseCoordinatesElement.textContent = `${this.canvasCoordinates(event).x}, ${this.canvasCoordinates(event).y}`;
     }
 
+    restoreCanvasPosition(data){
+        console.log('restore')
+        this.relativeCanvasPosition ={x:0,y:0};
+        this.updateGridSVGPosition();
+        this.drawObjects();
+    }
+    
+
     onKeyDown = (event) => {
+
+        if (event.key === 'Control'){
+            console.log(event)
+            observer.dispatch('restorePosition',this.canvasTypeByCoordinatesAxesLocation);
+        }
+
         if (event.key === 'Alt' && !(this.statement instanceof CanvasMoveStatement)) {
             event.preventDefault();
             console.log('set new statement' )
@@ -625,6 +686,7 @@ class CanvasMoveStatement extends Statement {
             x: this.startRelativeCanvasPosition.x - (this.dragNow.x - this.dragStart.x),
             y: this.startRelativeCanvasPosition.y - (this.dragNow.y - this.dragStart.y)
         };
+        observer.dispatch('canvasMoved', [this.planeView.relativeCanvasPosition, this.planeView.canvasTypeByCoordinatesAxesLocation]);
     }
 
     onMouseDown(event) {
