@@ -163,9 +163,7 @@ export class PlaneView {
         this.resizeCanvas(this.canvasWrapper.clientWidth, this.canvasWrapper.clientHeight)
         this.makeGirdOnSVG();
         this.subscribe();
-        this.changeStatement(new DefaultStatement(this));
-        console.log('этот контик',this.container)
-        
+        this.changeStatement(new DefaultStatement(this));        
     }
 
     updateGridSVGPosition() {
@@ -272,10 +270,9 @@ export class PlaneView {
         this.canvas.addEventListener('mousemove', this.onMouseMove);
         this.canvas.addEventListener('mouseup', this.onMouseUp);
         this.canvas.addEventListener('mouseout', this.onMouseOut);
-        // Подумать как сделать, типо на самом деле, самое удобное будет, что когда мы нажимае на ctrl у нас включается состояние на перемещение и приближение
-        // , а потом возвращается то, которое было.
         this.canvas.addEventListener('keydown', this.onKeyDown);
         this.canvas.addEventListener('keyup', this.onKeyUp);
+        window.addEventListener('resize',this.onWindowResize);
     }
 
     // /**
@@ -363,9 +360,13 @@ export class PlaneView {
     
         // Перерисовываем объекты с учетом новых размеров
         this.restoreAxesPosition(this.pointOfOriginLocation);
-        this.resizeCanvasWrapper(this.canvas.width,this.canvas.height);
+        // this.resizeCanvasWrapper(this.canvas.width,this.canvas.height);
         this.makeGirdOnSVG();
         this.drawObjects();
+    }
+
+    onWindowResize = (event) => {
+        this.resizeCanvas(this.canvasWrapper.clientWidth, this.canvasWrapper.clientHeight)
     }
 
     convertGlobalCoordinatesToLocal(input) {
