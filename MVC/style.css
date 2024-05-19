@@ -81,7 +81,6 @@ html, body {
     }
 
    .plain {
-        outline: 8px solid rgb(255, 0, 0);
         display: grid;
         grid-template-columns: 4fr minmax(120px, 1fr);
         grid-template-rows: 8fr 1fr;
@@ -95,8 +94,8 @@ html, body {
     .plain__canvas-wrapper {
         overflow: hidden;
         box-sizing: border-box;
-        
-        /* border-radius: 3px; */
+        border: 2px solid rgb(0, 0, 0);
+        border-radius: 3px;
         position: relative;
     }
 
@@ -169,9 +168,10 @@ html, body {
         left: 0;
     }
     .plain__canvas-wrapper:focus-within{
-        
-        /* border: 2px solid rgb(255, 0, 0);
-        border-radius: 4px; */
+        border: 2px solid rgb(255, 0, 0);
+    }
+    .planeCanvas:focus{
+        outline: none;
     }
 /*     
     .plain__canvas-wrapper:focus-within{
