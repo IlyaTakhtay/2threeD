@@ -26,21 +26,20 @@ const planeViewYZ = new PlaneView('containerYZ','YZCanvas','YZCanvasCoordinates'
 planeViewYZ.configurePlaneAxesDirection('leftLower')
 planeViewXY.configurePlaneAxesDirection('rightUpper')
 planeViewXZ.configurePlaneAxesDirection('rightLower')
-//   const legend = new Legend('XYCanvas', legendData);
-//   legend.render();
 
-
+planeViewYZ.drawObjects();
+planeViewXY.drawObjects();
+planeViewXZ.drawObjects();
 //set example
 fifthExample(planeModelXZ, planeModelYZ, planeModelXY);
 
+planeViewYZ.drawObjects(); //need to draw afte example initiation
+planeViewXY.drawObjects();
+planeViewXZ.drawObjects();
 
 const space3DModel = new Space3DModel()
 const space3DController = new Space3DController(space3DModel);
 const space3DView = new Space3DView("container3D",space3DController);
-
-// planeViewXY.resizeCanvas(120,120);
-// planeViewXZ.resizeCanvas(120,120);
-// planeViewYZ.resizeCanvas(120,120);
 
 window.splitLine = function() {
     planeViewXZ.toggleAddPointMode();
@@ -50,7 +49,6 @@ window.splitLine = function() {
 
 window.reconstruct = function() {
     observer.dispatch('reconstruct', {yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects})
-    // space3DModel.mainProcess({yzObjects:planeModelYZ.objects, xzObjects: planeModelXZ.objects, xyObjects: planeModelXY.objects});
 }
 
 window.switchCamera = function() {

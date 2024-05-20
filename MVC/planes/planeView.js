@@ -146,9 +146,8 @@ export class PlaneView {
         this.mouseCoordinatesElement.setAttribute("name", "mouseCoordinates");
         this.mouseCoordinatesElement.textContent = '0, 0';
         
-        this.altKeyPressCount = 0;
+        this.KeyPressCount = 0;
 
-        // container.appendChild(this.canvas);
         container.appendChild(this.mouseCoordinatesElement);
 
         this.controller = controller;
@@ -331,17 +330,17 @@ export class PlaneView {
                 this.ctx.translate(-this.canvas.width, 0);
                 this.pointOfOrigin.x = this.canvas.width
                 this.pointOfOrigin.y = 0
-                this.canvasTypeByCoordinatesAxesLocation = 'rightUpper';
+                this.changeCanvasEvent('rightUpper');
                 break;
             case 'rightLower':
                 this.ctx.scale(-1, -1);
                 this.ctx.translate(-this.canvas.width, -this.canvas.height);
                 this.pointOfOrigin.x = this.canvas.width
                 this.pointOfOrigin.y = this.canvas.height
-                this.canvasTypeByCoordinatesAxesLocation = 'rightLower';
+                this.changeCanvasEvent('rightLower');
                 break;
             case 'leftUpper':
-                this.canvasTypeByCoordinatesAxesLocation = 'leftUpper';
+                this.changeCanvasEvent('leftUpper');
                 console.log('default')
                 break;
             case 'leftLower':
@@ -349,11 +348,16 @@ export class PlaneView {
                 this.ctx.translate(0, -this.canvas.height);
                 this.pointOfOrigin.x = 0
                 this.pointOfOrigin.y = this.canvas.height
-                this.canvasTypeByCoordinatesAxesLocation = 'leftLower';
+                this.changeCanvasEvent('leftLower');
                 break;
             default:
                 console.log('default')
         }
+    }
+
+    changeCanvasEvent(type){
+        this.canvasTypeByCoordinatesAxesLocation = type;
+        this.makeGirdOnSVG();
     }
 
     changeStatement(type) {
@@ -483,6 +487,37 @@ export class PlaneView {
         }
     }
 
+    convertLocalCoordinatesToGlobal(input) {
+        if (typeof input === 'object' && input.hasOwnProperty('x') && input.hasOwnProperty('y')) {
+            return {
+                x: input.x + this.relativeCanvasPosition.x,
+                y: input.y + this.relativeCanvasPosition.y
+            };
+        } else if (input instanceof Point) {
+            return new Point({
+                x: input.pointX + this.relativeCanvasPosition.x,
+                y: input.pointY + this.relativeCanvasPosition.y,
+                name: input.name
+            });
+        } else if (input instanceof Line) {
+            return new Line({
+                point1: new Point({
+                    x: input.linePointX1 + this.relativeCanvasPosition.x,
+                    y: input.linePointY1 + this.relativeCanvasPosition.y,
+                    name: input.firstPoint.name
+                }),
+                point2: new Point({
+                    x: input.linePointX2 + this.relativeCanvasPosition.x,
+                    y: input.linePointY2 + this.relativeCanvasPosition.y,
+                    name: input.secondPoint.name
+                }),
+                name: input.name
+            });
+        } else {
+            throw new Error('convertLocalCoordinatesToGlobal получил неподдерживаемый тип входных данных');
+        }
+    }
+
     drawCanvasAxes(){
         this.ctx.globalAlpha = 0.5;
         this.ctx.beginPath();
@@ -526,6 +561,8 @@ export class PlaneView {
     drawObjectOnline(event) { //TODO: rename and optimise
         // const xSnapped = this.snapCoordinate(this.canvasCoordinates(event).x);
         // const ySnapped = this.snapCoordinate(this.canvasCoordinates(event).y);
+        let x = this.canvasCoordinates(event).x;
+        let y = this.canvasCoordinates(event).y;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawObjects(); // нужно чтобы не пропадали точки и линии во рисования объекта
         if (this.tempLineStart) {
@@ -538,11 +575,11 @@ export class PlaneView {
             this.ctx.fill();
             
             this.ctx.moveTo(this.tempLineStart.x, this.tempLineStart.y);
-            this.ctx.lineTo(this.canvasCoordinates(event).x, this.canvasCoordinates(event).y);
+            this.ctx.lineTo(x, y);
             this.ctx.stroke();
         }
         this.ctx.beginPath();
-        this.ctx.arc(this.canvasCoordinates(event).x, this.canvasCoordinates(event).y, this.pointRadius, 0, Math.PI * 2);
+        this.ctx.arc(x, y, this.pointRadius, 0, Math.PI * 2);
         this.ctx.fillStyle = 'rgba(128, 128, 128, 0.5)'; // Устанавливаем цвет заливки серым
         this.ctx.fill();
 
@@ -634,7 +671,6 @@ export class PlaneView {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawObjects();
         this.statement.onMouseOut();
-        this.statement = new DefaultStatement(this);
     }
     toggleDefaultMode() {
         this.changeStatement(new DefaultStatement(this));
@@ -728,8 +764,7 @@ class CanvasMoveStatement extends Statement {
     onKeyUp(event) {
         this.planeView.canvas.style.cursor = 'default';
     }
-    //Короче идея движения canvas конечно замечательная, но есть проблема в том, что у нас тогда приколы с проекциями получаются.
-    // Есть вариант. Если двигаем на одной canvas, то нужно двигать на всех!!!. Можно сделать это как-то через observer. Получается очень крутая вещь у меня этот обсервер.
+
 }
 
 //TODO: add MagnetStatement;
@@ -745,7 +780,7 @@ class DefaultStatement extends Statement {
     onCanvasClick(event) {
         //TODO: make to block selection while dragging
         if (!(this.dragStart.x - this.dragEnd.x)||!(this.dragStart.y - this.dragEnd.y)){
-            const { x, y } = this.planeView.canvasCoordinates(event);
+            const { x, y } = this.planeView.convertGlobalCoordinatesToLocal(this.planeView.canvasCoordinates(event));
             const object = this.planeView.controller.handleFindObjectName({ x, y, 
                 width:this.planeView.lineSelectionTolerance, radius: this.planeView.pointSelectionTolerance });
             if (object) {
@@ -825,12 +860,12 @@ class AddPointStatement extends Statement {
     super(planeView);
     }
 
-    splitSelectedLine(name){ //TODO: move to option
-        this.planeView.controller.handleSplitSelectedLineByName(coordinates);
+    splitSelectedLine(name){ //TODO: хз вообще что это такое
+        // this.planeView.controller.handleSplitSelectedLineByName(name);
     }
     
     onCanvasClick(event) {
-        const { x, y } = this.planeView.canvasCoordinates(event);
+        const { x, y } = this.planeView.convertLocalCoordinatesToGlobal(this.planeView.canvasCoordinates(event));
         const coordinates = {
             x: this.planeView.snapCoordinate(x),
             y: this.planeView.snapCoordinate(y),
@@ -855,71 +890,96 @@ class AddPointStatement extends Statement {
 class AddLineStatement extends Statement {
     constructor(planeView) {
         super(planeView);
+        this.tempLineStartGlobal = null;
         // this.tempLineStart = null; //TODO: make conclusion || couse render func in planeView also need this data.
-    }
-    
-    onMouseMove(event) {
-        this.planeView.drawObjectOnline(event);
+        // Короче случше бы чтобы темп лайн старт был только здесь и не был в planeView, но там он тоже нужен для рисования онлайн
     }
     
     onCanvasClick(event) {
         const { x, y } = this.planeView.canvasCoordinates(event);
-        let coordinates = {
+        const { x:globalX, y:globalY } = this.planeView.convertLocalCoordinatesToGlobal(this.planeView.canvasCoordinates(event));
+        let globalCoordinates = this.planeView.convertGlobalCoordinatesToLocal({
+            x: this.planeView.snapCoordinate(x),
+            y: this.planeView.snapCoordinate(y),
+        });
+        let localCoordinates = {
             x: this.planeView.snapCoordinate(x),
             y: this.planeView.snapCoordinate(y),
         };
         if (this.planeView.splitLineMode){
             if (this.planeView.tempLineStart === null) {
                 console.log("click", {x,y})
+                console.log("click", {globalX,globalY})
                 this.planeView.tempLineStart = {x,y};
+                this.tempLineStartGlobal = {x:globalX,y:globalY}
             } else {
-                const objStart = this.planeView.controller.handleFindObjectName({x:this.planeView.tempLineStart.x, y:this.planeView.tempLineStart.y, 
-                    width: this.planeView.pointSelectionTolerance});
-                const checkPointNearStart = this.planeView.controller.handleFindObjectName({x:this.planeView.tempLineStart.x, y:this.planeView.tempLineStart.y, 
-                    radius: this.planeView.pointSelectionTolerance});
-                const objEnd = this.planeView.controller.handleFindObjectName({x:x, y:y, 
-                    width: this.planeView.pointSelectionTolerance});
-                const checkPointNearEnd = this.planeView.controller.handleFindObjectName({x:x, y:y, 
-                    radius: this.planeView.pointSelectionTolerance});
+                const objStart = this.planeView.controller.handleFindObjectName({
+                    x: this.tempLineStartGlobal.x,
+                    y: this.tempLineStartGlobal.y,
+                    width: this.planeView.pointSelectionTolerance,
+                });
+                const checkPointNearStart = this.planeView.controller.handleFindObjectName({
+                    x: this.tempLineStartGlobal.x,
+                    y: this.tempLineStartGlobal.y,
+                    radius: this.planeView.pointSelectionTolerance,
+                });
+                const objEnd = this.planeView.controller.handleFindObjectName({
+                    x: globalCoordinates.x,
+                    y: globalCoordinates.y,
+                    width: this.planeView.pointSelectionTolerance,
+                });
+                const checkPointNearEnd = this.planeView.controller.handleFindObjectName({
+                    x: globalCoordinates.x,
+                    y: globalCoordinates.y,
+                    radius: this.planeView.pointSelectionTolerance,
+                });
                 if (objStart && !checkPointNearStart){
                     console.log("nameStart",objStart.name)
-                    this.planeView.tempLineStart = this.planeView.controller.handleSplitSelectedLine({name:objStart.name, 
-                        x:this.planeView.tempLineStart.x, y:this.planeView.tempLineStart.y});
-                    console.log("this.planeView.tempLineStart",this.planeView.tempLineStart)
+                    this.tempLineStartGlobal = this.planeView.controller.handleSplitSelectedLine({name:objStart.name, 
+                        x:this.tempLineStartGlobal.x, y:this.tempLineStartGlobal.y});
+                    console.log("this.tempLineStartGlobal",this.tempLineStartGlobal)
                      
                 } 
                 if (objEnd && !checkPointNearEnd){
                     console.log("nameEnd",objEnd.name)
-                    coordinates = this.planeView.controller.handleSplitSelectedLine({name:objEnd.name, x, y});
-                    console.log("this.planeView.coordinates",coordinates)
+                    globalCoordinates = this.planeView.controller.handleSplitSelectedLine({name:objEnd.name, globalX, globalY});
+                    console.log("this.planeView.coordinates",globalCoordinates)
 
                 }
                 const lineCoordinates = {
-                    x1: this.planeView.tempLineStart.x,
-                    y1: this.planeView.tempLineStart.y,
-                    x2: x,
-                    y2: y,
+                    x1: this.tempLineStartGlobal.x,
+                    y1: this.tempLineStartGlobal.y,
+                    x2: globalX,
+                    y2: globalY,
                     radius: this.planeView.pointRadius,
                 };
                 this.planeView.controller.handleCreateObject(lineCoordinates);
                 this.planeView.tempLineStart = null;
+                this.tempLineStartGlobal = null;
+
 
             }
         } else {    
-            if (this.planeView.tempLineStart === null) {
-                this.planeView.tempLineStart = coordinates;
+            if (this.planeView.tempLineStart === null || this.tempLineStartGlobal) {
+                this.planeView.tempLineStart = localCoordinates;
+                this.tempLineStartGlobal = globalCoordinates;
             } else {
                 const lineCoordinates = {
-                    x1: this.planeView.tempLineStart.x,
-                    y1: this.planeView.tempLineStart.y,
-                    x2: coordinates.x,
-                    y2: coordinates.y,
+                    x1: this.planeView.tempLineStartGlobal.x,
+                    y1: this.planeView.tempLineStartGlobal.y,
+                    x2: globalCoordinates.x,
+                    y2: globalCoordinates.y,
                     radius: this.planeView.pointRadius,
                 };
                 this.planeView.controller.handleCreateObject(lineCoordinates);
                 this.planeView.tempLineStart = null;
+                this.tempLineStartGlobal = null;
             }
         }
         this.planeView.drawObjects();
+    }
+
+    onMouseMove(event) {
+        this.planeView.drawObjectOnline(event);
     }
 }

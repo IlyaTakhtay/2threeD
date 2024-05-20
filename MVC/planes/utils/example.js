@@ -297,5 +297,5 @@ export function fifthExample (frontPlaneModel, sidePlaneModel, topPlaneModel){
     sidePlaneModel.objects.push(new Line({point1: yzTPoint4, point2: yzTPoint1, name: 'YZ T Line 4'}));
     sidePlaneModel.objects.push(new Line({point1: yzTPoint4, point2: yzTPoint2, name: 'YZ T Line 5'}));
     sidePlaneModel.objects.push(new Line({point1: yzTPoint4, point2: yzTPoint3, name: 'YZ T Line 6'}));
-
+    
 }
