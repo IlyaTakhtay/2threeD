@@ -309,6 +309,7 @@ export class PlaneView {
         this.canvas.addEventListener('mouseout', this.onMouseOut);
         this.canvas.addEventListener('keydown', this.onKeyDown);
         this.canvas.addEventListener('keyup', this.onKeyUp);
+        this.canvas.addEventListener('wheel', this.onMouseScroll);
         window.addEventListener('resize',this.onWindowResize);
     }
 
@@ -330,17 +331,17 @@ export class PlaneView {
                 this.ctx.translate(-this.canvas.width, 0);
                 this.pointOfOrigin.x = this.canvas.width
                 this.pointOfOrigin.y = 0
-                this.changeCanvasEvent('rightUpper');
+                this.changeCanvasTypeEvent('rightUpper');
                 break;
             case 'rightLower':
                 this.ctx.scale(-1, -1);
                 this.ctx.translate(-this.canvas.width, -this.canvas.height);
                 this.pointOfOrigin.x = this.canvas.width
                 this.pointOfOrigin.y = this.canvas.height
-                this.changeCanvasEvent('rightLower');
+                this.changeCanvasTypeEvent('rightLower');
                 break;
             case 'leftUpper':
-                this.changeCanvasEvent('leftUpper');
+                this.changeCanvasTypeEvent('leftUpper');
                 console.log('default')
                 break;
             case 'leftLower':
@@ -348,14 +349,14 @@ export class PlaneView {
                 this.ctx.translate(0, -this.canvas.height);
                 this.pointOfOrigin.x = 0
                 this.pointOfOrigin.y = this.canvas.height
-                this.changeCanvasEvent('leftLower');
+                this.changeCanvasTypeEvent('leftLower');
                 break;
             default:
                 console.log('default')
         }
     }
 
-    changeCanvasEvent(type){
+    changeCanvasTypeEvent(type){
         this.canvasTypeByCoordinatesAxesLocation = type;
         this.makeGirdOnSVG();
     }
@@ -459,8 +460,15 @@ export class PlaneView {
     convertGlobalCoordinatesToLocal(input) {
         if (typeof input === 'object' && input.hasOwnProperty('x') && input.hasOwnProperty('y')) {
             return {
-            x: input.x - this.relativeCanvasPosition.x,
-            y: input.y - this.relativeCanvasPosition.y
+                x: input.x - this.relativeCanvasPosition.x,
+                y: input.y - this.relativeCanvasPosition.y
+            };
+        } else if (typeof input === 'object' && input.hasOwnProperty('x1') && input.hasOwnProperty('y1') && input.hasOwnProperty('x2') && input.hasOwnProperty('y2')) {
+            return {
+                x1: input.x1 - this.relativeCanvasPosition.x,
+                y1: input.y1 - this.relativeCanvasPosition.y,
+                x2: input.x2 - this.relativeCanvasPosition.x,
+                y2: input.y2 - this.relativeCanvasPosition.y
             };
         } else if (input instanceof Point) {
             return new Point({
@@ -486,12 +494,19 @@ export class PlaneView {
             throw new Error('convertGlobalCoordinatesToLocal получил неподдерживаемый тип входных данных');
         }
     }
-
+    
     convertLocalCoordinatesToGlobal(input) {
         if (typeof input === 'object' && input.hasOwnProperty('x') && input.hasOwnProperty('y')) {
             return {
                 x: input.x + this.relativeCanvasPosition.x,
                 y: input.y + this.relativeCanvasPosition.y
+            };
+        } else if (typeof input === 'object' && input.hasOwnProperty('x1') && input.hasOwnProperty('y1') && input.hasOwnProperty('x2') && input.hasOwnProperty('y2')) {
+            return {
+                x1: input.x1 + this.relativeCanvasPosition.x,
+                y1: input.y1 + this.relativeCanvasPosition.y,
+                x2: input.x2 + this.relativeCanvasPosition.x,
+                y2: input.y2 + this.relativeCanvasPosition.y
             };
         } else if (input instanceof Point) {
             return new Point({
@@ -672,6 +687,11 @@ export class PlaneView {
         this.drawObjects();
         this.statement.onMouseOut();
     }
+
+    onMouseScroll = (event) => {
+        this.statement.onMouseScroll(event);
+    }
+
     toggleDefaultMode() {
         this.changeStatement(new DefaultStatement(this));
     }
@@ -708,6 +728,7 @@ class Statement {
     onMouseUp(event) {}
     onKeyDown(event) {}
     onKeyUp(event) {}
+    onMouseScroll(event) {}
 }
 
 class CanvasMoveStatement extends Statement {
@@ -765,6 +786,12 @@ class CanvasMoveStatement extends Statement {
         this.planeView.canvas.style.cursor = 'default';
     }
 
+    onMouseScroll(event) {
+        console.log("scroll")
+        this.planeView.canvasScale = this.planeView.canvasScale + 1;
+        
+    }
+
 }
 
 //TODO: add MagnetStatement;
@@ -774,7 +801,10 @@ class DefaultStatement extends Statement {
         super(planeView);
         this.isSelectionDragging = false;
         this.draggedObectName = null;
-        this.isPlaneMove =null;
+        this.isPlaneMove = null;
+        // this.dragStartGlobal = null;
+        // this.dragNowGlobal = null;
+        // this.dragEndGlobal = null;
     }
 
     onCanvasClick(event) {
@@ -798,7 +828,8 @@ class DefaultStatement extends Statement {
             this.isSelectionDragging = true;
         } else if (event.button === LEFT_BUTTON) {
             this.dragStart = this.planeView.canvasCoordinates(event);
-            const object = this.planeView.controller.handleFindObjectName({ x: this.dragStart.x, y: this.dragStart.y, radius: this.planeView.pointSelectionTolerance });
+            let dragStartGlobal = this.planeView.convertLocalCoordinatesToGlobal(this.dragStart);
+            const object = this.planeView.controller.handleFindObjectName({ x: dragStartGlobal.x, y: dragStartGlobal.y, radius: this.planeView.pointSelectionTolerance });
             if (object) {
                 this.draggedObject = object;
                 console.log(this.draggedObject)
@@ -812,8 +843,9 @@ class DefaultStatement extends Statement {
             this.planeView.drawSelectionRect();
         } else if (this.draggedObject) {
             this.dragNow = this.planeView.canvasCoordinates(event);
-            const snappedX = this.planeView.snapCoordinate(this.dragNow.x);
-            const snappedY = this.planeView.snapCoordinate(this.dragNow.y);
+            let dragNowGlobal = this.planeView.convertLocalCoordinatesToGlobal(this.dragNow);
+            const snappedX = this.planeView.snapCoordinate(dragNowGlobal.x);
+            const snappedY = this.planeView.snapCoordinate(dragNowGlobal.y);
 
             if (this.draggedObject.type === 'Point') {
                 this.planeView.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
@@ -845,12 +877,13 @@ class DefaultStatement extends Statement {
     
     
     getSelectionRect() {
-        return {
+        let rectangle = {
             x1: Math.min(this.dragStart.x, this.dragEnd.x),
             y1: Math.min(this.dragStart.y, this.dragEnd.y),
             x2: Math.max(this.dragStart.x, this.dragEnd.x),
             y2: Math.max(this.dragStart.y, this.dragEnd.y),
         };
+        return this.planeView.convertLocalCoordinatesToGlobal(rectangle);
     }
 
 }
