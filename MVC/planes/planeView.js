@@ -809,8 +809,10 @@ class DefaultStatement extends Statement {
 
     onCanvasClick(event) {
         //TODO: make to block selection while dragging
+        
         if (!(this.dragStart.x - this.dragEnd.x)||!(this.dragStart.y - this.dragEnd.y)){
-            const { x, y } = this.planeView.convertGlobalCoordinatesToLocal(this.planeView.canvasCoordinates(event));
+            console.log(this.dragStartStart, this.dragEnd)
+            const { x, y } = this.planeView.convertLocalCoordinatesToGlobal(this.planeView.canvasCoordinates(event));
             const object = this.planeView.controller.handleFindObjectName({ x, y, 
                 width:this.planeView.lineSelectionTolerance, radius: this.planeView.pointSelectionTolerance });
             if (object) {
