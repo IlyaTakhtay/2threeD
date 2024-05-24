@@ -303,26 +303,69 @@ export class Space3DModel {
 
         // console.log("currentLineProetions", currentFrontProjection,currentSideProjection,currentTopProjection)
 
+        let frontConditionMatch = false;
+        let frontConditionEqualsInDot = false;
+        let frontConditionDotsOnLine = false;
+
+        let sideConditionMatch = false;
+        let sideConditionEqualsInDot = false;
+        let sideConditionDotsOnLine = false;
+
+        let topConditionMatch = false;
+        let topConditionEqualsInDot = false;
+        let topConditionDotsOnLine = false;
+
         const frontCondition = frontLines.some(e => {
-          if (currentFrontProjection.equals(e) || currentFrontProjection.equalsInDot(e) || currentFrontProjection.isDotsOnLineBoolean([e.firstPoint,e.secondPoint])) {
-            // console.log("Front lines match:", e, currentFrontProjection);
+          if (currentFrontProjection.equals(e)) {
+            frontConditionMatch = e;
+            return true;
+          } else if (currentFrontProjection.equalsInDot(e)) {
+            frontConditionEqualsInDot = e;
+            return true;
+          } else if (currentFrontProjection.isDotsOnLineBoolean([e.firstPoint, e.secondPoint])) {
+            frontConditionDotsOnLine = e;
             return true;
           }
         });
 
         const sideCondition = sideLines.some(e => {
-          if (currentSideProjection.equals(e) || currentSideProjection.equalsInDot(e) || currentSideProjection.isDotsOnLineBoolean([e.firstPoint,e.secondPoint])) {
-            // console.log("Side lines match:", e, currentFrontProjection);
+          if (currentSideProjection.equals(e)) {
+            sideConditionMatch = e;
+            return true;
+          } else if (currentSideProjection.equalsInDot(e)) {
+            sideConditionEqualsInDot = e;
+            return true;
+          } else if (currentSideProjection.isDotsOnLineBoolean([e.firstPoint, e.secondPoint])) {
+            sideConditionDotsOnLine = e;
             return true;
           }
         });
 
         const topCondition = topLines.some(e => {
-          if (currentTopProjection.equals(e) || currentTopProjection.equalsInDot(e) || currentTopProjection.isDotsOnLineBoolean([e.firstPoint,e.secondPoint])) {
-            // console.log("Top lines match:", e, currentFrontProjection);
+          if (currentTopProjection.equals(e)) {
+            topConditionMatch = e;
+            return true;
+          } else if (currentTopProjection.equalsInDot(e)) {
+            topConditionEqualsInDot = e;
+            return true;
+          } else if (currentTopProjection.isDotsOnLineBoolean([e.firstPoint, e.secondPoint])) {
+            topConditionDotsOnLine = e;
             return true;
           }
         });
+
+        if (frontConditionDotsOnLine) {
+          console.log(`Front Dots on line: `,frontConditionDotsOnLine);
+        }
+        
+        if (sideConditionDotsOnLine) {
+          console.log(`Side Dots on line:`,sideConditionDotsOnLine);
+        }
+        
+        if (topConditionDotsOnLine) {
+          console.log(`Top Dots on line:`,topConditionDotsOnLine);
+        }
+        
         if (topCondition && sideCondition && frontCondition){
           Lines3D.push(currentLine);
         }
