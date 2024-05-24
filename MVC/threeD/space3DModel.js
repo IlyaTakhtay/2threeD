@@ -355,15 +355,15 @@ export class Space3DModel {
         });
 
         if (frontConditionDotsOnLine) {
-          console.log(`Front Dots on line: `,frontConditionDotsOnLine);
+          console.log(`Front Dots on line: `,point1, point2,frontConditionDotsOnLine.firstPoint,frontConditionDotsOnLine.secondPoint);
         }
         
         if (sideConditionDotsOnLine) {
-          console.log(`Side Dots on line:`,sideConditionDotsOnLine);
+          console.log(`Side Dots on line:`,point1, point2,sideConditionDotsOnLine.firstPoint,sideConditionDotsOnLine.secondPointPoint);
         }
         
         if (topConditionDotsOnLine) {
-          console.log(`Top Dots on line:`,topConditionDotsOnLine);
+          console.log(`Top Dots on line:`,point1, point2,topConditionDotsOnLine.firstPoint,topConditionDotsOnLine.secondPoint);
         }
         
         if (topCondition && sideCondition && frontCondition){
