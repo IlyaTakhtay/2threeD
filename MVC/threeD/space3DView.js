@@ -178,21 +178,58 @@ export class Space3DView {
 
 
     // Функция для преобразования Point3D в координаты для THREE.Points + offest к 0;0;0
-    convertPointsToPositions(points) {
+    convertPointsToPositionsWithoutOffset(points) {
         const positions = [];
         points.forEach(point => {
-            positions.push(point.pointX - points[0].pointX, point.pointY - points[0].pointY, point.pointZ - points[0].pointZ);
+          positions.push(point.pointX, point.pointY, point.pointZ);
+        });
+        return positions;
+    }
+      
+    convertPointsToPositionsWithOffset(points) {
+        const positions = [];
+        const firstPoint = points[0];
+        points.forEach(point => {
+          positions.push(
+            point.pointX - firstPoint.pointX,
+            point.pointY - firstPoint.pointY,
+            point.pointZ - firstPoint.pointZ
+          );
         });
         return positions;
     }
 
-    // Функция для преобразования Line3D в координаты для THREE.LineSegments
-    convertLinesToPositions(lines) {
+    convertLinesToPositionsWithoutOffset(lines) {
+        const positions = [];
+        lines.forEach(line => {
+          positions.push(
+            line.firstPoint.pointX,
+            line.firstPoint.pointY,
+            line.firstPoint.pointZ
+          );
+          positions.push(
+            line.secondPoint.pointX,
+            line.secondPoint.pointY,
+            line.secondPoint.pointZ
+          );
+        });
+        return positions;
+    }
+      
+    convertLinesToPositionsWithOffset(lines) {
         const positions = [];
         const firstPoint = lines[0].firstPoint;
         lines.forEach(line => {
-            positions.push(line.firstPoint.pointX - firstPoint.pointX, line.firstPoint.pointY - firstPoint.pointY, line.firstPoint.pointZ - firstPoint.pointZ);
-            positions.push(line.secondPoint.pointX - firstPoint.pointX, line.secondPoint.pointY - firstPoint.pointY, line.secondPoint.pointZ - firstPoint.pointZ);
+          positions.push(
+            line.firstPoint.pointX - firstPoint.pointX,
+            line.firstPoint.pointY - firstPoint.pointY,
+            line.firstPoint.pointZ - firstPoint.pointZ
+          );
+          positions.push(
+            line.secondPoint.pointX - firstPoint.pointX,
+            line.secondPoint.pointY - firstPoint.pointY,
+            line.secondPoint.pointZ - firstPoint.pointZ
+          );
         });
         return positions;
     }
@@ -230,8 +267,8 @@ export class Space3DView {
         const { vertices:vertices, edges:edges }= this.controller.handleObjects();
 
         // Преобразуем Point3D и Line3D в координаты для рендера
-        const pointPositions = this.convertPointsToPositions(vertices);
-        const linePositions = this.convertLinesToPositions(edges);
+        const pointPositions = this.convertPointsToPositionsWithOffset(vertices);
+        const linePositions = this.convertLinesToPositionsWithOffset(edges);
         // console.log(pointPositions,linePositions)
         
         // Добавляем точки в геометрию

@@ -31,7 +31,7 @@ planeViewYZ.drawObjects();
 planeViewXY.drawObjects();
 planeViewXZ.drawObjects();
 //set example
-fouthExample(planeModelXZ, planeModelYZ, planeModelXY);
+fifthExample(planeModelXZ, planeModelYZ, planeModelXY);
 
 planeViewYZ.drawObjects(); //need to draw afte example initiation
 planeViewXY.drawObjects();

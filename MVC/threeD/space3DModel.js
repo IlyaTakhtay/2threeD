@@ -30,17 +30,27 @@ class Point3D {
   }
 
   equalsProjection(other) {
-    const equalXY = 
-                    this.pointX === other.pointX && this.pointY === other.pointY;
+    const equalXY = this.pointX === other.pointX && this.pointY === other.pointY;
   
-    const equalXZ = 
-                    this.pointX === other.pointX && this.pointZ === other.pointZ;
+    const equalXZ = this.pointX === other.pointX && this.pointZ === other.pointZ;
   
-    const equalYZ = 
-                    this.pointY === other.pointY && this.pointZ === other.pointZ;
+    const equalYZ = this.pointY === other.pointY && this.pointZ === other.pointZ;
     
     return equalXY || equalXZ || equalYZ;
   }
+
+  getProjectionOnXY(){
+    return new Point({x:this.pointX,y:this.pointY});
+  }
+  
+  getProjectionOnYZ(){
+    return new Point({x:this.pointY,y:this.pointZ});
+  }
+
+  getProjectionOnXZ(){
+    return new Point({x:this.pointX,y:this.pointZ});
+  }
+
 }
 
 class Line3D {
@@ -153,6 +163,20 @@ export class Space3DModel {
     return objects.filter(element => element instanceof Point3D);
   }
   
+  findStartEndAtLines(lines){
+    let points = []; 
+    lines.forEach( line => {
+      points.push(line.firstPoint,line.secondPoint)
+    });
+    points.sort((firstPoint,secondPoint) => {
+        if (firstPoint.pointX !== secondPoint.pointY){
+          return firstPoint.pointX - secondPoint.pointX 
+        } else {
+          return firstPoint.pointY - secondPoint.pointY 
+        }
+    });
+    return {startPoint:points[0], endPoint:points[points.length - 1]};
+  }
   //TODO: WRITTEN BY GPT // может быть уже и не нужно
   makeLineByLinesChain(lines) {
     const mergedLines = [];
@@ -178,18 +202,21 @@ export class Space3DModel {
       }
   
       if (chain.length > 1) {
+        console.log("chain",chain)
+        let endPoints = this.findStartEndAtLines([chain[0],chain[chain.length - 1]]);
+        console.log(endPoints);
         const mergedLine = new Line({
-          point1: chain[0].firstPoint,
-          point2: chain[chain.length - 1].secondPoint
+          point1: endPoints.endPoint,
+          point2: endPoints.startPoint
         });
         mergedLines.push(mergedLine);
       } else {
-        // mergedLines.push(chain[0]);
+        mergedLines.push(chain[0]);
       }
     }
     console.log("added lines",mergedLines)
-    mergedLines.forEach(e => lines.push(e))
-    return lines;
+    // mergedLines.forEach(e => lines.push(e))
+    return mergedLines;
   }
   
   areCollinear(line1, line2) {
@@ -221,6 +248,7 @@ export class Space3DModel {
   linesExtractor(objects) {
     return objects.filter(element => element instanceof Line);
   }
+
 
   inputDataConverter({objects, planeAxes}){
       const points = objects.filter(obj => obj instanceof Point);
@@ -288,9 +316,10 @@ export class Space3DModel {
 
   find3DLines({points3D, frontLines, topLines, sideLines}) {
     const Lines3D = [];
+
     console.log("find3DLines",points3D, frontLines, topLines, sideLines)
     for (let i = 0; i < points3D.length; i++) {
-      for (let j = 0; j < points3D.length; j++) {
+      for (let j = i + 1; j < points3D.length; j++) {
         const point1 = points3D[i];
         const point2 = points3D[j];
       
@@ -301,7 +330,7 @@ export class Space3DModel {
         const currentSideProjection = currentLine.getProjectionOnYZ()
         const currentTopProjection = currentLine.getProjectionOnXY()
 
-        // console.log("currentLineProetions", currentFrontProjection,currentSideProjection,currentTopProjection)
+        // console.log("currentLineProeсtions", currentFrontProjection,currentSideProjection,currentTopProjection)
 
         let frontConditionMatch = false;
         let frontConditionEqualsInDot = false;
@@ -322,7 +351,7 @@ export class Space3DModel {
           } else if (currentFrontProjection.equalsInDot(e)) {
             frontConditionEqualsInDot = e;
             return true;
-          } else if (currentFrontProjection.isDotsOnLineBoolean([e.firstPoint, e.secondPoint])) {
+          } else if (e.isDotsOnLineBoolean([currentFrontProjection.firstPoint, currentFrontProjection.secondPoint])) {
             frontConditionDotsOnLine = e;
             return true;
           }
@@ -335,7 +364,7 @@ export class Space3DModel {
           } else if (currentSideProjection.equalsInDot(e)) {
             sideConditionEqualsInDot = e;
             return true;
-          } else if (currentSideProjection.isDotsOnLineBoolean([e.firstPoint, e.secondPoint])) {
+          } else if (e.isDotsOnLineBoolean([currentSideProjection.firstPoint, currentSideProjection.secondPoint])) {
             sideConditionDotsOnLine = e;
             return true;
           }
@@ -348,29 +377,19 @@ export class Space3DModel {
           } else if (currentTopProjection.equalsInDot(e)) {
             topConditionEqualsInDot = e;
             return true;
-          } else if (currentTopProjection.isDotsOnLineBoolean([e.firstPoint, e.secondPoint])) {
+          } else if (e.isDotsOnLineBoolean([currentTopProjection.firstPoint, currentTopProjection.secondPoint])) {
             topConditionDotsOnLine = e;
             return true;
           }
         });
 
-        if (frontConditionDotsOnLine) {
-          console.log(`Front Dots on line: `,point1, point2,frontConditionDotsOnLine.firstPoint,frontConditionDotsOnLine.secondPoint);
-        }
-        
-        if (sideConditionDotsOnLine) {
-          console.log(`Side Dots on line:`,point1, point2,sideConditionDotsOnLine.firstPoint,sideConditionDotsOnLine.secondPointPoint);
-        }
-        
-        if (topConditionDotsOnLine) {
-          console.log(`Top Dots on line:`,point1, point2,topConditionDotsOnLine.firstPoint,topConditionDotsOnLine.secondPoint);
-        }
-        
         if (topCondition && sideCondition && frontCondition){
           Lines3D.push(currentLine);
         }
+        
       }
     }
+
     return Lines3D;
   }
 
@@ -396,7 +415,12 @@ export class Space3DModel {
     console.log("PlanesLines", sideView.lines,frontView.lines,topView.lines)
     const points3D = this.find3DPoints({sideView:sideView.points,frontView:frontView.points,topView:topView.points});
     points3D.forEach(item => this.#vertices.push(item))
-    const lines3D = this.find3DLines({points3D:points3D,sideLines:sideView.lines,frontLines:frontView.lines,topLines:topView.lines})
+    const lines3D = this.find3DLines({
+      points3D:points3D,
+      sideLines:this.makeLineByLinesChain(sideView.lines),
+      frontLines:this.makeLineByLinesChain(frontView.lines),
+      topLines:this.makeLineByLinesChain(topView.lines)
+    });
     lines3D.forEach(item => this.#edges.push(item))
     console.log("3Dpoints", this.#vertices)
     console.log("3DLines,", this.#edges)
