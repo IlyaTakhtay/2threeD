@@ -427,6 +427,7 @@ export class PlaneModel {
         const object = this.#objects.find(item => item.name === objectName);
         if (object) {
             object.name = newName;
+            observer.dispatch('objectUpdated', object)
         }
     }
 

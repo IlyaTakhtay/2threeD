@@ -66,12 +66,10 @@ export class Legend { // should to make it maximally independent to PlaneView
             if (newName) {
                 if (this.controller.handleUpdateObjectName(name, newName) === 'exists'){
                     alert('Такое имя уже есть!')
-                } else {
-                    element.textContent = newName; // Обновляем отображаемое имя прямо здесь, если это требуется
-                } 
+                }
             }
         }
-    }
+    }    
 
     updateCoordinates = (event) => {
         if (event.button == 2){
@@ -379,14 +377,18 @@ export class PlaneView {
 
     snapCoordinate(value) {
         let snapTolerance = 4
-        let ralativeToCell = value % this.gridSize;
+        let relativeToCell = value % this.gridSize;
+        
+        if (relativeToCell < 0) {
+            relativeToCell += this.gridSize;
+        }
 
-        if (ralativeToCell <= snapTolerance) {
+        if (relativeToCell <= snapTolerance) {
             // snap to lower value
-            return value - ralativeToCell;
-        } else if (ralativeToCell >= (this.gridSize - snapTolerance)) {
+            return value - relativeToCell;
+        } else if (relativeToCell >= (this.gridSize - snapTolerance)) {
             // snap to higher value
-            return value + (this.gridSize - ralativeToCell);
+            return value + (this.gridSize - relativeToCell);
         } else
             return value
     }
@@ -802,6 +804,7 @@ class DefaultStatement extends Statement {
         this.isSelectionDragging = false;
         this.draggedObectName = null;
         this.isPlaneMove = null;
+        this.draggedObject = null;
         // this.dragStartGlobal = null;
         // this.dragNowGlobal = null;
         // this.dragEndGlobal = null;
@@ -849,9 +852,9 @@ class DefaultStatement extends Statement {
             const snappedX = this.planeView.snapCoordinate(dragNowGlobal.x);
             const snappedY = this.planeView.snapCoordinate(dragNowGlobal.y);
 
-            if (this.draggedObject.type === 'Point') {
+            if (this.draggedObject.pointType === 'point') {
                 this.planeView.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);
-            } else if (this.draggedObject.type === 'Line') { //Legacy ?
+            } else if (this.draggedObject.pointType === 'line') { //Legacy ?
                 this.planeView.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY, this.draggedObject.pointType);
             }
 
