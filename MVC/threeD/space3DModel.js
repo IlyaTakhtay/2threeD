@@ -160,7 +160,7 @@ export class Space3DModel {
 
 
   pointsExtractor(objects) {
-    return objects.filter(element => element instanceof Point3D);
+    return objects.filter(element => element instanceof Point);
   }
   
   findStartEndAtLines(lines){
@@ -289,16 +289,15 @@ export class Space3DModel {
       const result = [];
       console.log("find3DPoints", frontView, topView, sideView)
       for (const frontElement of frontView) {
-        if (frontElement instanceof Point3D) {
           const x1 = frontElement.pointX;
-          const z1 = frontElement.pointZ;
+          const z1 = frontElement.pointY;
     
           for (const topElement of topView) {
-            if (topElement instanceof Point3D && x1 === topElement.pointX) {
+            if (x1 === topElement.pointX) {
               const y1 = topElement.pointY;
     
               for (const sideElement of sideView) {
-                if (sideElement instanceof Point3D && y1 === sideElement.pointY && z1 === sideElement.pointZ) {
+                if (y1 === sideElement.pointX && z1 === sideElement.pointY) {
                   const point3D = new Point3D(x1, y1, z1);
     
                   // Проверяем, есть ли уже такая точка в результирующем массиве
@@ -308,7 +307,6 @@ export class Space3DModel {
                 }
               }
             }
-          }
         }
       }
       return result;
@@ -324,13 +322,10 @@ export class Space3DModel {
         const point2 = points3D[j];
       
         const currentLine = new Line3D({point1:point1,point2:point2})
-        // console.log("currentLine", currentLine)
 
         const currentFrontProjection = currentLine.getProjectionOnXZ()
         const currentSideProjection = currentLine.getProjectionOnYZ()
         const currentTopProjection = currentLine.getProjectionOnXY()
-
-        // console.log("currentLineProeсtions", currentFrontProjection,currentSideProjection,currentTopProjection)
 
         let frontConditionMatch = false;
         let frontConditionEqualsInDot = false;
@@ -397,17 +392,17 @@ export class Space3DModel {
   mainProcess ({yzObjects, xzObjects, xyObjects}) {
     this.#edges = [],this.#faces = [],this.#vertices = [];
     const sideView = {
-      points: this.pointsExtractor(this.inputDataConverter({ objects: yzObjects, planeAxes: 'YZ' })),
+      points: this.pointsExtractor(yzObjects),
       lines: this.linesExtractor(yzObjects)
     };
     
     const frontView = {
-      points: this.pointsExtractor(this.inputDataConverter({ objects: xzObjects, planeAxes: 'XZ' })),
+      points: this.pointsExtractor(xzObjects),
       lines: this.linesExtractor(xzObjects)
     };
     
     const topView = {
-      points: this.pointsExtractor(this.inputDataConverter({ objects: xyObjects, planeAxes: 'XY' })),
+      points: this.pointsExtractor(xyObjects),
       lines: this.linesExtractor(xyObjects)
     };
 
