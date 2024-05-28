@@ -1,0 +1,19 @@
+{
+  "name": "twothreed",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.14",
+    "vite": "^5.2.0"
+  },
+  "dependencies": {
+    "three": "^0.164.1"
+  }
+}
