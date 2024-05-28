@@ -188,12 +188,15 @@ export class Space3DView {
       
     convertPointsToPositionsWithOffset(points) {
         const positions = [];
-        const firstPoint = points[0];
+        const minX = Math.min(...points.map(point => point.pointX));
+        const minY = Math.min(...points.map(point => point.pointY));
+        const minZ = Math.min(...points.map(point => point.pointZ));
+        const offsetPoint = {pointX:minX, pointY:minY, pointZ:minZ};
         points.forEach(point => {
           positions.push(
-            point.pointX - firstPoint.pointX,
-            point.pointY - firstPoint.pointY,
-            point.pointZ - firstPoint.pointZ
+            point.pointX - offsetPoint.pointX,
+            point.pointY - offsetPoint.pointY,
+            point.pointZ - offsetPoint.pointZ
           );
         });
         return positions;
@@ -218,17 +221,24 @@ export class Space3DView {
       
     convertLinesToPositionsWithOffset(lines) {
         const positions = [];
-        const firstPoint = lines[0].firstPoint;
+        const points = [];
+        lines.forEach(line => {
+            points.push(line.firstPoint, line.secondPoint);
+        });
+        const minX = Math.min(...points.map(point => point.pointX));
+        const minY = Math.min(...points.map(point => point.pointY));
+        const minZ = Math.min(...points.map(point => point.pointZ));
+        const offsetPoint = {pointX:minX, pointY:minY, pointZ:minZ};
         lines.forEach(line => {
           positions.push(
-            line.firstPoint.pointX - firstPoint.pointX,
-            line.firstPoint.pointY - firstPoint.pointY,
-            line.firstPoint.pointZ - firstPoint.pointZ
+            line.firstPoint.pointX - offsetPoint.pointX,
+            line.firstPoint.pointY - offsetPoint.pointY,
+            line.firstPoint.pointZ - offsetPoint.pointZ
           );
           positions.push(
-            line.secondPoint.pointX - firstPoint.pointX,
-            line.secondPoint.pointY - firstPoint.pointY,
-            line.secondPoint.pointZ - firstPoint.pointZ
+            line.secondPoint.pointX - offsetPoint.pointX,
+            line.secondPoint.pointY - offsetPoint.pointY,
+            line.secondPoint.pointZ - offsetPoint.pointZ
           );
         });
         return positions;
