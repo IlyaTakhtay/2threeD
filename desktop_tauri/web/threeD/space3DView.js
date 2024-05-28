@@ -1,8 +1,9 @@
 import * as THREE from 'three';
+import Stats from 'stats.js';
+
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-
 import { Space3DController as controller } from './space3DController';
 import observer  from '../planes/utils/observer.js'
 export class Space3DView {
@@ -48,6 +49,10 @@ export class Space3DView {
         // Добавление осей координат
         this.axesHelper = new THREE.AxesHelper(7);
         this.rootObject.add(this.axesHelper);
+
+        this.stats = new Stats();
+        this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+        this.container.appendChild(this.stats.dom);
         
         // Добавление текстовых меток для осей
         const loader = new FontLoader();
@@ -86,6 +91,10 @@ export class Space3DView {
         }
       };
 
+    toggleStats() {
+        this.statsVisible = !this.statsVisible;
+        this.stats.dom.style.display = this.statsVisible ? 'block' : 'none';
+    }
 
     toggleCamera() {
         if (this.isPerspectiveCamera) {
@@ -168,12 +177,14 @@ export class Space3DView {
     };
 
     animate = () => {
+        this.stats.begin()
         requestAnimationFrame(this.animate.bind(this));
 
         this.updateGridAndAxesScale();
       
         this.controls.update();
         this.renderer.render(this.scene,this.camera);
+        this.stats.end()
     };
 
 

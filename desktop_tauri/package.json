@@ -14,6 +14,8 @@
     "vite": "^5.2.0"
   },
   "dependencies": {
+    "stats": "^1.0.0",
+    "stats.js": "^0.17.0",
     "three": "^0.164.1"
   }
 }

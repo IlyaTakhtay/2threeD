@@ -76,3 +76,7 @@ window.deleteSelected = function() {
     planeViewXY.deleteSelected();
     planeViewYZ.deleteSelected();
 };
+
+window.toggleStats = function() {
+    space3DView.toggleStats();
+}
