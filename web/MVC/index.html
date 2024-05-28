@@ -1,0 +1,31 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas с добавлением, выделением и удалением точек и линий</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+
+    <div class="navbar">
+        <a href="#" onclick="reconstruct()">Построить 3D</a>
+        <a href="#" onclick="toggleDefaultMode()">Мышь</a>
+        <a href="#" onclick="toggleAddPointMode()">Точка</a>
+        <a href="#" onclick="toggleAddLineMode()">Линия</a>
+        <a href="#" onclick="toggleSplitLineMode()">Разделение линий</a>
+        <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
+        <a href="#" onclick="switchCamera()">Поменять камеру</a>
+    </div>
+
+    <div class="container-wrapper">
+        <div id="containerXZ" class="plain"></div>
+        <div id="containerYZ" class="plain"></div>
+        <div id="containerXY" class="plain"></div>
+        <div id="container3D" class="threeD-container"></div>
+    </div>
+
+    <script type="module" src="/main.js"></script>
+
+    </body>
+    </html>
