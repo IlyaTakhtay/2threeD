@@ -169,7 +169,7 @@ export class Space3DModel {
       points.push(line.firstPoint,line.secondPoint)
     });
     points.sort((firstPoint,secondPoint) => {
-        if (firstPoint.pointX !== secondPoint.pointY){
+        if (firstPoint.pointX !== secondPoint.pointX){
           return firstPoint.pointX - secondPoint.pointX 
         } else {
           return firstPoint.pointY - secondPoint.pointY 
