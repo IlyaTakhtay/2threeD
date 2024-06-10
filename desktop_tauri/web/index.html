@@ -7,18 +7,21 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+    
+<a href="#" class="switchContainer" id="switchContainer" onclick="toggleContainers()">Переключить проекцию</a>
 
 <div class="navbar">
-    <a href="#" onclick="reconstruct()">Построить 3D</a>
     <a href="#" onclick="toggleDefaultMode()">Мышь</a>
     <a href="#" onclick="toggleAddPointMode()">Точка</a>
     <a href="#" onclick="toggleAddLineMode()">Линия</a>
-    <a href="#" onclick="toggleSplitLineMode()">Разделение линий</a>
+    <a href="#" onclick="reconstruct()">Построить 3D</a>
+    <!-- <a href="#" onclick="toggleSplitLineMode()">Разделение линий</a> -->
     <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
     <a href="#" onclick="switchCamera()">Поменять камеру</a>
     <a href="#" onclick="toggleStats()">Статистика</a>
+    
 </div>
-
+    
 <div class="container-wrapper">
     <div id="containerXZ" class="plain"></div>
     <div id="containerYZ" class="plain"></div>
