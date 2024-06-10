@@ -182,7 +182,7 @@ export class Line {
                 if (Math.abs(crossProduct) > tolerance) {
                     return false; // Если хотя бы одна точка не лежит на линии, вернуть false
                 }
-                // TODO: ??? это нужно или нет
+                // нужно для того, чтобы смотреть находятся ли отрезок внутри линии
                 const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
                 if (!(0 <= t && t <= 1)) {
                     return false; // Если t не находится в диапазоне [0, 1], точка лежит за пределами отрезка
@@ -202,9 +202,10 @@ export class Line {
             if (Math.abs(crossProduct) > tolerance) {
                 return false;
             }
-            // TODO: ??? это нужно или нет?
-            // const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
-            // return 0 <= t && t <= 1;
+            const t = ((x - lineX1) * (lineX2 - lineX1) + (y - lineY1) * (lineY2 - lineY1)) / ((lineX2 - lineX1) ** 2 + (lineY2 - lineY1) ** 2);
+            if (!(0 <= t && t <= 1)) {
+                return 0 <= t && t <= 1;
+            }
             return true
         }
     }

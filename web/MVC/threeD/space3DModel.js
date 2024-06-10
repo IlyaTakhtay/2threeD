@@ -250,41 +250,6 @@ export class Space3DModel {
   }
 
 
-  inputDataConverter({objects, planeAxes}){
-      const points = objects.filter(obj => obj instanceof Point);
-      const lines = objects.filter(obj => obj instanceof Line);
-      let convertedPoints;
-      switch (planeAxes){
-        case 'XY':
-          convertedPoints = points.map(point => new Point3D(point.pointX, point.pointY, null));
-            break;
-        case 'XZ':
-          convertedPoints = points.map(point => new Point3D(point.pointX, null, point.pointY));
-            break;
-        case 'YZ':
-          convertedPoints = points.map(point => new Point3D(null, point.pointX, point.pointY));
-            break;
-    }
-      
-      
-      const convertedLines = lines.map(line => {
-        const point1Index = points.indexOf(line.firstPoint);
-        const point2Index = points.indexOf(line.secondPoint);
-
-        return new Line3D({point1:convertedPoints[point1Index], point2:convertedPoints[point2Index]});
-      });
-      
-      return objects.map(obj => {
-        if (obj instanceof Point) {
-          return convertedPoints[points.indexOf(obj)];
-        } else if (obj instanceof Line) {
-          return convertedLines[lines.indexOf(obj)];
-        }
-      });
-  }
-
-
-
   find3DPoints ({frontView, topView, sideView}){
       const result = [];
       console.log("find3DPoints", frontView, topView, sideView)
