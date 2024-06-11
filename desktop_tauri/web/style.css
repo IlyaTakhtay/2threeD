@@ -1,92 +1,65 @@
-html, body {
-    
-    position: fixed;
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    font-family: Arial, sans-serif;
-  }
-/* 
-
-    canvas{
-        display: block;
-    } */
+    html, body { 
+        position: fixed;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        font-family: Arial, sans-serif;
+    }
 
     .navbar {
-       
-        background-color: #333;
-        overflow: hidden;
-        flex: 0 0 auto; /* Ширина будет автоматически рассчитываться в соответствии с содержимым */
-        height: 7%; /* Высота будет 10% высоты родительского элемента */
-    }
-    
-    .navbar a {
-        float: left;
-        display: block;
-        color: white;
-        text-align: center;
-        padding: 14px 16px;
-        text-decoration: none;
-    }
-    
-    .navbar a:hover {
-        background-color: #ddd;
-        color: black;
-    }
-
-    /* .navbar button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        padding: 14px 16px;
-        text-decoration: none;
-        margin: 8px;
-    } */
-    
-    .navbar button:hover {
-        background-color: #45a049;
-    }
-    
-
-    .navbar {
-        
         height: 50px;
         background-color: #333;
         color: #fff;
         display: flex;
         align-items: center;
         padding: 0 20px;
+        flex-wrap: wrap; /* Позволяет элементам переноситься на новую строку */
     }
-      
-
-    /* Короче надо навести суету с owerflow всеми этими приколами*/ 
-
+    
     .navbar a {
-        color: #fff;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 10px; /* Увеличили отступы для лучшей читаемости */
         text-decoration: none;
-        margin-right: 20px;
+        white-space: nowrap; /* Предотвращает перенос текста на новую строку */
+        border: 1px solid transparent; /* Добавили границу */
+        border-radius: 5px; /* Скругление углов */
+    }
+    
+    .navbar a:hover {
+        background-color: #ddd;
+        color: black;
+        border-color: #333; /* Изменяем цвет границы при наведении */
+    }
+
+    .switchContainer {
+        display: none;
+        position: absolute; /* Абсолютное позиционирование */
+        bottom: 1vh; /* Располагаем внизу */
+        right: 1vw; /* Располагаем справа */
+        background-color: #333; /* Цвет фона */
+        color: #fff; /* Цвет текста */
+        padding: 1vh; /* Внутренние отступы */
+        border-radius: 1vh; /* Скругление углов */
+        text-decoration: none; /* Убираем подчеркивание ссылки */
     }
 
     .container-wrapper {
-        
+        padding: 2px;
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(2, 1fr);
         height: calc(100% - 60px);
         gap: 10px;
-        /* padding: 10px; */
         overflow: auto;
     }
 
-   .plain {
+    .plain {
         display: grid;
         grid-template-columns: 4fr minmax(120px, 1fr);
         grid-template-rows: 8fr 1fr;
-        /* grid-template-areas:
-            "plain__canvas-wrapper plain__legend"
-            "mouse-coordinates ."; */
         gap: 2vh;
         overflow: hidden;
     }
@@ -100,7 +73,6 @@ html, body {
     }
 
     .plain__legend-item {
-        
         min-width: 60px;
         display: flex;
         align-items: flex-start;
@@ -108,7 +80,6 @@ html, body {
     }
       
     .plain__legend-color {
-        
         width: 20px;
         height: 20px;
         margin-right: 10px;
@@ -116,10 +87,8 @@ html, body {
     }
       
     .plain__legend-label {
-        
         font-size: 14px;
         line-height: 1.4;
-        /* color: #333; */
         min-width: 80px;
         flex: 1 1 auto;
         
@@ -129,58 +98,23 @@ html, body {
         hyphens: auto;
     }
     /* ну вот эта вещь работает только по размеру экрана //TODO - разобраться че с этим делать*/
-    @media (min-width: 800px) {
-        .plain__legend-label {
-            /* Стили для скрытия длинного текста после 100 пикселей */
-            display: inline-block;
-            max-width: 150px; /* Установите желаемую максимальную ширину */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            
-            /* Удаление стилей для переноса текста */
-            word-break: normal;
-            overflow-wrap: normal;
-            hyphens: none;
-        }
-    }
-    
-    /* С языками разобраться ещё надо */
-    /* .plain__legend-label[lang="ru"] {
-        hyphens: auto;
-        -webkit-hyphens: auto;
-        -moz-hyphens: auto;
-        -ms-hyphens: auto;
-      }
-      
-      .plain__legend-label[lang="en"] {
-        hyphens: auto;
-        -webkit-hyphens: auto;
-        -moz-hyphens: auto;
-        -ms-hyphens: auto;
-      } */
 
     svg[name="gridSVG"],.planeCanvas {
-        
         overflow: hidden;
         position: absolute;
         top: 0;
         left: 0;
     }
+
     .plain__canvas-wrapper:focus-within{
         border: 2px solid rgb(255, 0, 0);
     }
+
     .planeCanvas:focus{
         outline: none;
     }
-/*     
-    .plain__canvas-wrapper:focus-within{
-        border: 1px solid rgb(255, 0, 0);
-        border-radius: 3px
-    } */
 
     .plain__legend {
-        
         overflow-x: hidden;
         overflow-y: scroll;
         grid-column: 2;
@@ -199,28 +133,53 @@ html, body {
 
     }
     
-    /* #containerXZ, #containerYZ, #containerXY, #container3D {
-        position: relative;
-        width: 100%;
-        height: 100%;
-    }
-    
-    svg[name="gridSVG"], canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-    } */
-    
     .selected {
         background-color: rgba(33, 78, 98, 0.5); /* Прозрачная синеватая заливка */
     }
 
     
     div[name="mouseCoordinates"] {
-        
         overflow: hidden;
         background-color: rgba(255, 255, 255, 0.8);
         font-family: Arial, sans-serif;
         font-size: 2vw;
         text-align: center;
     }
+
+        /* Медиа-запросы для адаптивности */
+    
+        @media screen and (max-width: 900px) and (max-height: 900px) {
+
+            .navbar {
+                padding: 2px; /* Уменьшаем отступы */
+                height: auto; /* Позволяет navbar увеличиваться по вертикали при необходимости */
+            }
+        
+            .navbar a {
+                padding: 2px; /* Уменьшаем отступы для лучшей адаптивности */
+                margin: 2px; /* Добавляем небольшие отступы между кнопками */
+            }
+    
+            .switchContainer {
+                display: block;
+            }
+    
+            .container-wrapper {
+                padding: 2px;
+                display: gird;
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                grid-template-rows: repeat(1, 1fr);
+                height: calc(100% - 60px);
+                overflow: auto;
+            }
+        
+            .container-wrapper > div {
+                display: none; /* Скрываем все контейнеры */
+            }
+
+            .container-wrapper > div:first-child {
+                display: grid; /* Показываем только первый контейнер */
+            }
+        
+        }

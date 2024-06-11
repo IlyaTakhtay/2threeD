@@ -11,6 +11,8 @@ import { Space3DView } from './threeD/space3DView.js';
 import { firstExample, fouthExample, secondExample, thirdExample,fifthExample } from './planes/utils/example.js';
 import { Space3DController } from './threeD/space3DController.js';
 
+import { ContainerController } from './ui/mainField.js';
+
 const planeModelXZ = new PlaneModel;
 const planeControllerXZ = new PlaneController(planeModelXZ);
 const planeViewXZ = new PlaneView('containerXZ','XZCanvas','XZCanvasCoordinates', 'XZegend',planeControllerXZ);
@@ -31,7 +33,7 @@ planeViewYZ.drawObjects();
 planeViewXY.drawObjects();
 planeViewXZ.drawObjects();
 //set example
-fifthExample(planeModelXZ, planeModelYZ, planeModelXY);
+thirdExample(planeModelXZ, planeModelYZ, planeModelXY);
 
 planeViewYZ.drawObjects(); //need to draw afte example initiation
 planeViewXY.drawObjects();
@@ -79,4 +81,12 @@ window.deleteSelected = function() {
 
 window.toggleStats = function() {
     space3DView.toggleStats();
+}
+
+window.toggleContainers = function() {
+    ContainerController.toggleContainers();
+    planeViewXZ.onWindowResize();
+    planeViewXY.onWindowResize();
+    planeViewYZ.onWindowResize();
+    space3DView.onWindowResize();
 }

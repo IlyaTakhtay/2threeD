@@ -42,7 +42,7 @@ export class Space3DView {
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
         this.controls.minDistance = 10;
-        this.controls.maxDistance = 200;
+        this.controls.maxDistance = 300;
 
         window.addEventListener('resize', this.onWindowResize, false);
         document.addEventListener('keydown', this.onKeyDown);
@@ -128,7 +128,7 @@ export class Space3DView {
             this.controls.enableZoom = true; // Включение масштабирования для перспективной камеры
             this.controls.enablePan = true; // Включение панорамирования для перспективной камеры
             this.controls.minDistance = 10;
-            this.controls.maxDistance = 200;
+            this.controls.maxDistance = 300;
         }
       
         this.isPerspectiveCamera = !this.isPerspectiveCamera;
@@ -165,8 +165,8 @@ export class Space3DView {
         } else {
             scale = this.camera.zoom * 0.1;
         }
-        
-        this.gridHelper.scale.set(scale, scale, scale);
+        this.gridHelper.scale.set(0, 0, 0);
+        // this.gridHelper.scale.set(scale, scale, scale);
         this.axesHelper.scale.set(scale, scale, scale);
     }
     
