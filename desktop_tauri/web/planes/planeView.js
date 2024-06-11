@@ -618,10 +618,12 @@ export class PlaneView {
 
     canvasCoordinates(event){
         let canvasCorrection = this.canvas.getBoundingClientRect();
-
+        
+        let x = Math.abs(this.pointOfOrigin.x - (event.clientX - canvasCorrection.left));
+        let y = Math.abs(this.pointOfOrigin.y - (event.clientY - canvasCorrection.top));
         return {
-            x: Math.abs(this.pointOfOrigin.x - (event.clientX - canvasCorrection.left)),
-            y: Math.abs(this.pointOfOrigin.y - (event.clientY - canvasCorrection.top)),
+            x: Math.floor(x),
+            y: Math.floor(y),
         };
     }
 
