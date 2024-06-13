@@ -24,7 +24,8 @@
         padding: 10px; /* Увеличили отступы для лучшей читаемости */
         text-decoration: none;
         white-space: nowrap; /* Предотвращает перенос текста на новую строку */
-        border: 1px solid transparent; /* Добавили границу */
+        margin-right: 1vw;
+        border: 1px solid black; /* Добавили границу */
         border-radius: 5px; /* Скругление углов */
     }
     
