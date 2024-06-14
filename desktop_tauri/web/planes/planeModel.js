@@ -129,10 +129,12 @@ export class Line {
     #point1;
     #point2;
     #name;
-    constructor({point1 = null, point2 = null, name = null}) {
+    #dashed;
+    constructor({point1 = null, point2 = null, name = null, dashed = false}) {
         this.#point1 = point1;
         this.#point2 = point2;
         this.#name = name;
+        this.#dashed = dashed;
     }
     get linePointX1() { return this.#point1.pointX }
     get linePointY1() { return this.#point1.pointY }
@@ -152,6 +154,10 @@ export class Line {
     get name() { return this.#name };
 
     set name(name) { this.#name = name }
+
+    get dashed() { return this.#dashed }
+
+    set dashed(dashed) { this.#dashed = dashed }
 
     equals(other) {
         return (
@@ -235,6 +241,7 @@ export class PlaneModel {
                 name: `Точка ${this.pointCounter++}`,
             });
             this.objects.push(point);
+            return point.name;
         }
 
         if ((x === undefined) && (y === undefined) && (x1 !== undefined) && (y1 !== undefined) && (x2 !== undefined) && (y2 !== undefined)) {
@@ -268,6 +275,8 @@ export class PlaneModel {
                 name: `Линия ${this.lineCounter++}`,
             });
             this.objects.push(line);
+            return line.name;
+
         }
     }
 
@@ -326,6 +335,42 @@ export class PlaneModel {
             return null;
         }
     }
+
+    findSelectedObject(coordinates) {
+        const { x, y, radius , width} = coordinates;
+    
+        if ((x !== undefined) && (y !== undefined) && ((radius !== undefined) || (width !== undefined))) {
+            let foundItem = 0;
+            this.#selectedObjects.forEach(item => {
+                if (item instanceof Point) {
+                    const distance = Math.sqrt((item.pointX - x) ** 2 + (item.pointY - y) ** 2);
+                    if (distance <= radius) {
+                        foundItem = item;
+                    }
+                } else if (item instanceof Line) {
+                    const distance = Algoritm.pointToLineDistance({x:x,y:y,line:item})
+                    if (distance <= width) {
+                        foundItem = item;
+                    }
+                }
+                return false;
+            });
+        
+            if (foundItem !== 0) {
+                if (foundItem instanceof Point) {
+                    return {
+                        object: foundItem,
+                        pointType: 'point'
+                    };
+                } else if (foundItem instanceof Line) {
+                    return {
+                        object: foundItem,
+                    };
+                }
+            }
+            return null;
+        }
+    }
     
     get objects(){
         return this.#objects
@@ -351,6 +396,16 @@ export class PlaneModel {
             this.#selectedObjects.delete(object); // Снятие выделения, если объект уже выделен
         } else {
             this.#selectedObjects.add(object); // Выделение объекта, если он не был выделен
+        }
+    }
+
+    toggleDashedObject(object) {
+        console.log(object)
+        if (object.dashed === true){
+            object.dashed = false;
+        } else {
+            object.dashed = true;
+            
         }
     }
 
@@ -466,6 +521,18 @@ export class PlaneModel {
                 this.objects.splice(index, 1);
             }
             return nearestPoint;
+        }
+    }
+
+    ApplyLineDashByName(lineName){
+        const findedInObjects = this.objects.find(item => item.name === lineName);
+
+        if (findedInObjects) {
+            this.toggleDashedObject(findedInObjects)
+            observer.dispatch('objectUpdated', findedInObjects) // TODO
+            return true
+        } else {
+            return false
         }
     }
 

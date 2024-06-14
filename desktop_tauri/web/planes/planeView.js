@@ -550,9 +550,9 @@ export class PlaneView {
             // console.log(obj)
             if (obj instanceof Point) {
                 if (this.controller.handleCheckObjectSelection(obj)) {
-                    this.ctx.fillStyle = 'blue'; // Устанавливаем синий цвет для выделенных линий
+                    this.ctx.fillStyle = 'blue'; // Устанавливаем синий цвет для выделенных точек
                 } else {
-                    this.ctx.fillStyle = 'black'; // Устанавливаем черный цвет для невыделенных линий
+                    this.ctx.fillStyle = 'black'; // Устанавливаем черный цвет для невыделенных точек
                 }
                 this.ctx.beginPath();
                 obj = this.convertGlobalCoordinatesToLocal(obj);
@@ -565,10 +565,18 @@ export class PlaneView {
                     this.ctx.strokeStyle = 'black'; // Устанавливаем черный цвет для невыделенных линий
                 }
                 this.ctx.beginPath();
+
+                if (obj.dashed) {
+                    this.ctx.setLineDash([5, 3]); // Устанавливаем шаблон пунктирной линии
+                }
+
                 obj = this.convertGlobalCoordinatesToLocal(obj);
+
                 this.ctx.moveTo(obj.linePointX1, obj.linePointY1);
                 this.ctx.lineTo(obj.linePointX2, obj.linePointY2);
                 this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                
             }
         });
         this.drawCanvasAxes();
@@ -648,7 +656,6 @@ export class PlaneView {
 
         if (event.key === 'Alt' && !(this.statement instanceof CanvasMoveStatement)) {
             event.preventDefault();
-            console.log('set new statement' )
             this.previousStatement = this.statement;
             this.statement = new CanvasMoveStatement(this);
             this.statement.onKeyDown();
@@ -698,16 +705,26 @@ export class PlaneView {
 
     toggleDefaultMode() {
         this.changeStatement(new DefaultStatement(this));
+        console.log('set new statement', this.statement)
     }
     toggleAddPointMode() {
         if (!(this.statement instanceof AddPointStatement)){
             this.changeStatement(new AddPointStatement(this))
+            console.log('set new statement', this.statement)
         }
     }
 
     toggleAddLineMode() {
-        if (!(this.statement instanceof AddLineStatement)){
+        if (!(this.statement instanceof AddLineStatement) || this.statement instanceof AddDashedLineStatement){
             this.changeStatement(new AddLineStatement(this))
+            console.log('set new statement', this.statement)
+        }
+    }
+
+    toggleAddDashedLineMode() {
+        if (!(this.statement instanceof AddDashedLineStatement)){
+            this.changeStatement(new AddDashedLineStatement(this))
+            console.log('set new statement', this.statement)
         }
     }
 
@@ -953,7 +970,7 @@ class AddLineStatement extends Statement {
                 this.planeView.tempLineStart = {x,y};
                 this.tempLineStartGlobal = {x:globalX,y:globalY}
             } else {
-                const objStart = this.planeView.controller.handleFindObjectName({
+                const objStart = this.planeView.controller.handleFindSelectedObjectName({
                     x: this.tempLineStartGlobal.x,
                     y: this.tempLineStartGlobal.y,
                     width: this.planeView.pointSelectionTolerance,
@@ -963,7 +980,7 @@ class AddLineStatement extends Statement {
                     y: this.tempLineStartGlobal.y,
                     radius: this.planeView.pointSelectionTolerance,
                 });
-                const objEnd = this.planeView.controller.handleFindObjectName({
+                const objEnd = this.planeView.controller.handleFindSelectedObjectName({
                     x: globalCoordinates.x,
                     y: globalCoordinates.y,
                     width: this.planeView.pointSelectionTolerance,
@@ -982,7 +999,7 @@ class AddLineStatement extends Statement {
                 } 
                 if (objEnd && !checkPointNearEnd){
                     console.log("nameEnd",objEnd.name)
-                    globalCoordinates = this.planeView.controller.handleSplitSelectedLine({name:objEnd.name, globalX, globalY});
+                    globalCoordinates = this.planeView.controller.handleSplitSelectedLine({name:objEnd.name, x:globalX, y:globalY});
                     console.log("this.planeView.coordinates",globalCoordinates)
 
                 }
@@ -993,11 +1010,10 @@ class AddLineStatement extends Statement {
                     y2: globalY,
                     radius: this.planeView.pointRadius,
                 };
-                this.planeView.controller.handleCreateObject(lineCoordinates);
+                var lineName = this.planeView.controller.handleCreateObject(lineCoordinates);
                 this.planeView.tempLineStart = null;
                 this.tempLineStartGlobal = null;
-
-
+                return lineName
             }
         } else {    
             if (this.planeView.tempLineStart === null || this.tempLineStartGlobal) {
@@ -1011,9 +1027,10 @@ class AddLineStatement extends Statement {
                     y2: globalCoordinates.y,
                     radius: this.planeView.pointRadius,
                 };
-                this.planeView.controller.handleCreateObject(lineCoordinates);
+                var lineName = this.planeView.controller.handleCreateObject(lineCoordinates);
                 this.planeView.tempLineStart = null;
                 this.tempLineStartGlobal = null;
+                return lineName
             }
         }
         this.planeView.drawObjects();
@@ -1021,5 +1038,19 @@ class AddLineStatement extends Statement {
 
     onMouseMove(event) {
         this.planeView.drawObjectOnline(event);
+    }
+}
+
+class AddDashedLineStatement extends AddLineStatement { 
+    constructor(planeView){
+        super(planeView);
+    }
+
+    onCanvasClick(event){
+        var lineName = super.onCanvasClick(event)
+        if (lineName !== null){
+            this.planeView.controller.handleApplyLineDashByName(lineName)
+        }
+
     }
 }

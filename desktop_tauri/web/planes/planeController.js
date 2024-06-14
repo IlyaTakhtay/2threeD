@@ -57,9 +57,25 @@ export class PlaneController {
     }
 
     handleFindObjectName(coordinates) {
-        console.log("Handle find object coordinates");
+        console.log("Handle find object coordinates", coordinates);
         const result = this.model.findObject(coordinates);
         console.log('pn', result);
+        if (result) {
+            const { object, pointType } = result;
+            return {
+                name: object.name,
+                type: object.constructor.name,
+                pointType: pointType,
+            };
+        } else {
+            return null;
+        }
+    }
+
+    handleFindSelectedObjectName(coordinates) {
+        console.log("Handle find object coordinates", coordinates);
+        const result = this.model.findSelectedObject(coordinates);
+        console.log('sel', result);
         if (result) {
             const { object, pointType } = result;
             return {
@@ -91,5 +107,10 @@ export class PlaneController {
         console.log("Handle split line")
         console.log("split line in point: ", point)
         return point
+    }
+
+    handleApplyLineDashByName(lineName){
+        console.log("handleApplyLineDashByName",lineName)
+        return this.model.ApplyLineDashByName(lineName);
     }
 }

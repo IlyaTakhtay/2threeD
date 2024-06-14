@@ -33,7 +33,7 @@ planeViewYZ.drawObjects();
 planeViewXY.drawObjects();
 planeViewXZ.drawObjects();
 //set example
-thirdExample(planeModelXZ, planeModelYZ, planeModelXY);
+fouthExample(planeModelXZ, planeModelYZ, planeModelXY);
 
 planeViewYZ.drawObjects(); //need to draw afte example initiation
 planeViewXY.drawObjects();
@@ -89,4 +89,10 @@ window.toggleContainers = function() {
     planeViewXY.onWindowResize();
     planeViewYZ.onWindowResize();
     space3DView.onWindowResize();
+}
+
+window.toggleAddDashedLineMode = function() {
+    planeViewXZ.toggleAddDashedLineMode();
+    planeViewXY.toggleAddDashedLineMode();
+    planeViewYZ.toggleAddDashedLineMode();
 }
