@@ -20,6 +20,9 @@
     <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
     <a href="#" onclick="switchCamera()">Поменять камеру</a>
     <a href="#" onclick="toggleStats()">Статистика</a>
+    <a href="#" onclick="saveData()">Сохранение</a>
+    <input type="file" id="fileInput" style="display:none" onchange="loadData(event)" />
+    <button onclick="document.getElementById('fileInput').click()">Load Data</button>
     
 </div>
     

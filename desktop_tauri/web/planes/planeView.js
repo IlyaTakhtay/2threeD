@@ -868,8 +868,11 @@ class DefaultStatement extends Statement {
         } else if (this.draggedObject) {
             this.dragNow = this.planeView.canvasCoordinates(event);
             let dragNowGlobal = this.planeView.convertLocalCoordinatesToGlobal(this.dragNow);
-            const snappedX = this.planeView.snapCoordinate(dragNowGlobal.x);
-            const snappedY = this.planeView.snapCoordinate(dragNowGlobal.y);
+            // const snappedX = this.planeView.snapCoordinate(dragNowGlobal.x);
+            // const snappedY = this.planeView.snapCoordinate(dragNowGlobal.y);
+
+            const snappedX = dragNowGlobal.x
+            const snappedY = dragNowGlobal.y
 
             if (this.draggedObject.pointType === 'point') {
                 this.planeView.controller.handleUpdateObjectCoordinates(this.draggedObject.name, snappedX, snappedY);

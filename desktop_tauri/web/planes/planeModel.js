@@ -1,3 +1,4 @@
+import { js } from 'three/examples/jsm/nodes/Nodes.js';
 import observer from './utils/observer.js'
 
 export class Algoritm{
@@ -123,6 +124,20 @@ export class Point {
     equals(other) {
         return this.pointX === other.pointX && this.pointY === other.pointY;
     }
+
+    toJSON() {
+        return {
+            x: this.#x,
+            y: this.#y,
+            name: this.#name
+        };
+    }
+
+    static fromJSON(json) {
+        console.log(json)
+        return new Point({x:json.x, y:json.y, name:json.name});
+    }
+
 }
 
 export class Line {
@@ -215,7 +230,18 @@ export class Line {
         }
     }
     
-    
+    toJSON() {
+        return {
+            point1: this.#point1,
+            point2: this.#point2,
+            name: this.#name,
+            dashed: this.#dashed
+        };
+    }
+
+    static fromJSON(json) {
+        return new Line({point1:Point.fromJSON(json.point1), point2:Point.fromJSON(json.point2), name:json.name, dashed:json.dashed});
+    }
 }
 
 export class PlaneModel {
@@ -228,6 +254,13 @@ export class PlaneModel {
     constructor() {
         this.#objects = []; // Массив для хранения всех объектов
         this.#selectedObjects = new Set(); // Множество для хранения выделенных объектов
+    }
+
+    setObjects(objects) {
+        console.log(this.#objects)
+        this.#objects = [];
+        objects.forEach(item => {this.#objects.push(item)});
+        console.log(this.#objects)
     }
 
     // Добавление нового объекта в массив объектов
