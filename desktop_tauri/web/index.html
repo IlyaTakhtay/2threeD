@@ -5,22 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Canvas с добавлением, выделением и удалением точек и линий</title>
 <link rel="stylesheet" type="text/css" href="style.css">
+<link rel="manifest" href="/Pwa/manifest.json">
 </head>
 <body>
     
 <a href="#" class="switchContainer" id="switchContainer" onclick="toggleContainers()">Переключить проекцию</a>
 
 <div class="navbar">
-    <a href="#" onclick="toggleDefaultMode()">Мышь</a>
-    <a href="#" onclick="toggleAddPointMode()">Точка</a>
-    <a href="#" onclick="toggleAddLineMode()">Линия</a>
-    <a href="#" onclick="toggleAddDashedLineMode()">Линия штрих</a>
-    <a href="#" onclick="reconstruct()">Построить 3D</a>
-    <!-- <a href="#" onclick="toggleSplitLineMode()">Разделение линий</a> -->
-    <a href="#" onclick="deleteSelected()">Удалить выделенные объекты</a>
-    <a href="#" onclick="switchCamera()">Поменять камеру</a>
-    <a href="#" onclick="toggleStats()">Статистика</a>
-    <a href="#" onclick="saveData()">Сохранение</a>
+    <button onclick="toggleDefaultMode()">Мышь</button>
+    <button onclick="toggleAddPointMode()">Точка</button>
+    <button onclick="toggleAddLineMode()">Линия</button>
+    <button onclick="toggleAddDashedLineMode()">Линия штрих</button>
+    <button onclick="reconstruct()">Построить 3D</button>
+    <!-- <button onclick="toggleSplitLineMode()">Разделение линий</button> -->
+    <button onclick="deleteSelected()">Удалить выделенные объекты</button>
+    <button onclick="switchCamera()">Поменять камеру</button>
+    <button onclick="toggleStats()">Статистика</button>
+    <button onclick="saveData()">Сохранение</button>
     <input type="file" id="fileInput" style="display:none" onchange="loadData(event)" />
     <button onclick="document.getElementById('fileInput').click()">Load Data</button>
     
