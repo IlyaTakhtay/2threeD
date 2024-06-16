@@ -137,57 +137,29 @@ window.loadData = function(event) {
     }
     const file = input.files[0];
     const reader = new FileReader();
-    
+
     reader.onload = function(e) {
         const dataStr = e.target.result;
         console.log("File content:", dataStr); // Debugging
         try {
             const data = JSON.parse(dataStr);
             console.log("Parsed data:", data); // Debugging
-            
-            // Convert JSON data to objects
-            let planeModelXZObjects = data.XZ.map(obj => {
-                console.log("XZ Object:", obj); // Debugging
-                if (obj.x !== undefined && obj.y !== undefined) {
-                    return Point.fromJSON(obj);
-                } else {
-                    return Line.fromJSON(obj);
-                }
-            });
 
-            let planeModelXYObjects = data.XY.map(obj => {
-                console.log("XY Object:", obj); // Debugging
-                if (obj.x !== undefined && obj.y !== undefined) {
-                    return Point.fromJSON(obj);
-                } else {
-                    return Line.fromJSON(obj);
-                }
-            });
-
-            let planeModelYZObjects = data.YZ.map(obj => {
-                console.log("YZ Object:", obj); // Debugging
-                if (obj.x !== undefined && obj.y !== undefined) {
-                    return Point.fromJSON(obj);
-                } else {
-                    return Line.fromJSON(obj);
-                }
-            });
-
-            // Match points to lines
-            planeModelXZObjects = matchPointsToLines(planeModelXZObjects);
-            planeModelXYObjects = matchPointsToLines(planeModelXYObjects);
-            planeModelYZObjects = matchPointsToLines(planeModelYZObjects);
+            // Создание объектов точек и линий
+            let planeModelXZObjects = createObjectsFromData(data.XZ);
+            let planeModelXYObjects = createObjectsFromData(data.XY);
+            let planeModelYZObjects = createObjectsFromData(data.YZ);
 
             console.log("planeModelXZObjects:", planeModelXZObjects); // Debugging
             console.log("planeModelXYObjects:", planeModelXYObjects); // Debugging
             console.log("planeModelYZObjects:", planeModelYZObjects); // Debugging
 
-            // Set objects in models
+            // Устанавливаем объекты в модели
             planeModelXZ.setObjects(planeModelXZObjects);
             planeModelXY.setObjects(planeModelXYObjects);
             planeModelYZ.setObjects(planeModelYZObjects);
 
-            // Redraw the objects on the views
+            // Перерисовываем объекты на видах
             planeViewXZ.drawObjects();
             planeViewXY.drawObjects();
             planeViewYZ.drawObjects();
@@ -196,33 +168,34 @@ window.loadData = function(event) {
             alert("Error loading data. Please check the file format.");
         }
     };
-    
+
     reader.readAsText(file);
 };
 
-// Function to match points to lines based on coordinates
-function matchPointsToLines(planeModelObjects) {
-    const allPoints = planeModelObjects.filter(obj => obj instanceof Point);
-    const allLines = planeModelObjects.filter(obj => obj instanceof Line);
+function createObjectsFromData(data) {
+    let points = data.filter(obj => obj.x !== undefined && obj.y !== undefined).map(Point.fromJSON);
+    let lines = data.filter(obj => obj.x === undefined && obj.y === undefined).map(Line.fromJSON);
 
-    // Create a map of points for quick lookup by name
-    const pointMap = new Map(allPoints.map(point => [point.name, point]));
+    return matchPointsToLines(points, lines);
+}
 
-    // Link points within lines to actual point objects
-    allLines.forEach(line => {
+function matchPointsToLines(points, lines) {
+    // Привязываем точки к линиям
+    lines.forEach(line => {
         // Find and link point1
         if (line.point1 && typeof line.point1 === 'object') {
-            line.point1 = pointMap.get(line.point1.name);
+            line.point1 = points.find(point => point.name === line.point1.name) || line.point1;
         }
         // Find and link point2
         if (line.point2 && typeof line.point2 === 'object') {
-            line.point2 = pointMap.get(line.point2.name);
+            line.point2 = points.find(point => point.name === line.point2.name) || line.point2;
         }
     });
 
-    // Return combined array of points and lines
-    return [...allPoints, ...allLines];
+    // Возвращаем объединённый массив точек и линий
+    return [...points, ...lines];
 }
+
 
 // Function to find a matching point based on coordinates
 function findMatchingPoint(targetPoint, pointsArray) {

@@ -133,9 +133,8 @@ export class Point {
         };
     }
 
-    static fromJSON(json) {
-        console.log(json)
-        return new Point({x:json.x, y:json.y, name:json.name});
+    static fromJSON(data) {
+        return new Point(data);
     }
 
 }
@@ -239,8 +238,12 @@ export class Line {
         };
     }
 
-    static fromJSON(json) {
-        return new Line({point1:Point.fromJSON(json.point1), point2:Point.fromJSON(json.point2), name:json.name, dashed:json.dashed});
+    static fromJSON(data) {
+        return new Line({
+            ...data,
+            point1: new Point(data.point1),
+            point2: new Point(data.point2)
+        });
     }
 }
 
